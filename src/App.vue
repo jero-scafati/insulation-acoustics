@@ -1,18 +1,52 @@
 <template>
   <div class="h-screen w-screen flex flex-col bg-[#edf1f5] text-slate-800 text-xs overflow-hidden font-sans select-none">
     
-    <!-- 1. Top Menu Bar (Responsive wrapping) -->
-    <header class="h-auto min-h-[32px] bg-white border-b border-slate-300 flex flex-wrap items-center justify-between px-3 py-1.5 md:py-0 shrink-0 gap-2">
-      <div class="flex items-center gap-3.5 flex-wrap">
-        <span class="font-black text-[#0b5b8c] tracking-tight">AcoustiCAD v1.2</span>
-        <div class="flex gap-3 text-slate-600 text-[10px] md:text-xs">
+    <!-- 1. Top Menu Bar (Desktop text links, Mobile action icons) -->
+    <header class="h-10 bg-white border-b border-slate-300 flex items-center justify-between px-3 shrink-0 z-30">
+      <div class="flex items-center gap-3">
+        <span class="font-black text-[#0b5b8c] tracking-tight text-xs sm:text-sm">AcoustiCAD v1.2</span>
+        
+        <!-- Desktop menu options -->
+        <div class="hidden md:flex gap-3 text-slate-600">
           <button class="hover:text-black font-semibold cursor-pointer">Archivo</button>
           <button class="hover:text-black font-semibold cursor-pointer" @click="triggerImport">Importar...</button>
           <button class="hover:text-black font-semibold cursor-pointer" @click="exportToExcel">Exportar Reporte...</button>
           <button class="hover:text-black font-semibold cursor-pointer" @click="showInfoModal = true">Ayuda / Acerca de</button>
         </div>
       </div>
-      <div class="flex items-center gap-2 text-[9px] md:text-[10px] text-slate-400">
+
+      <!-- Mobile menu action icons -->
+      <div class="flex md:hidden items-center gap-4">
+        <button 
+          @click="triggerImport"
+          class="p-1 text-slate-600 hover:text-[#0b5b8c] active:scale-95"
+          title="Importar base de datos (Excel)"
+        >
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </button>
+        <button 
+          @click="exportToExcel"
+          class="p-1 text-[#0b5b8c] active:scale-95"
+          title="Exportar Reporte (Excel)"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </button>
+        <button 
+          @click="showInfoModal = true"
+          class="p-1 text-slate-400 hover:text-slate-600 active:scale-95"
+          title="Acerca de"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="hidden sm:flex items-center gap-2 text-[10px] text-slate-400">
         <span>Norma: ISO 12354-1 / ISO 717-1</span>
       </div>
     </header>
@@ -26,10 +60,10 @@
       class="hidden"
     />
 
-    <!-- Main Workspace (Vertical stack on mobile, horizontal split on desktop) -->
-    <div class="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-h-0 bg-[#edf1f5]">
+    <!-- Main Workspace (Vertical tabs on mobile, full grid on desktop) -->
+    <div class="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 bg-[#edf1f5]">
       
-      <!-- 2. Left Shortcut Toolbar (Hidden on mobile, vertical strip on desktop) -->
+      <!-- 2. Left Shortcut Toolbar (Hidden on mobile) -->
       <aside class="hidden lg:flex w-14 bg-white border-r border-slate-300 flex-col items-center py-4 justify-between shrink-0">
         <div class="flex flex-col items-center gap-3.5 w-full">
           <!-- Open File Database -->
@@ -80,40 +114,40 @@
         </div>
       </aside>
 
-      <!-- 3. Central Canvas Area (Dynamic visual wall and output header) -->
-      <main class="w-full h-[400px] lg:flex-1 lg:h-full flex flex-col bg-white overflow-hidden shrink-0 border-b lg:border-b-0 border-slate-300">
-        
-        <!-- Header de Resultados (Responsive grid/flex) -->
-        <div class="h-auto min-h-[64px] border-b border-slate-300 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 py-3 sm:py-0 bg-[#f8fafc] shrink-0 gap-3">
+      <!-- 3. Central Canvas Area (Fills screen on mobile if 'canvas' active) -->
+      <main 
+        class="w-full h-full lg:flex-1 flex flex-col bg-white overflow-hidden shrink-0"
+        :class="mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'"
+      >
+        <!-- Header de Resultados (Compact, responsive columns) -->
+        <div class="h-auto min-h-[64px] border-b border-slate-300 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 py-2 sm:py-0 bg-[#f8fafc] shrink-0 gap-2">
           <!-- Left side: Material mechanical summaries -->
           <div class="flex flex-wrap items-center gap-3 sm:gap-5">
             <div>
-              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Paramento de Ensayo</div>
-              <div class="text-xs sm:text-sm font-black text-slate-800">{{ activeMaterial.nombre }}</div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Paramento</div>
+              <div class="text-xs sm:text-sm font-black text-[#0b5b8c] mt-0.5">{{ activeMaterial.nombre }}</div>
             </div>
-            <div class="hidden xs:block h-6 w-[1px] bg-slate-300"></div>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
             <div>
-              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Masa Superficial</div>
-              <div class="text-[10px] sm:text-xs font-bold text-slate-700">
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Masa Superficial</div>
+              <div class="text-[10px] sm:text-xs font-bold text-slate-700 mt-0.5">
                 {{ (activeMaterial.densidad * activeMaterial.espesor).toFixed(2) }} <span class="text-[9px] font-medium text-slate-500">kg/m²</span>
               </div>
             </div>
-            <div class="hidden xs:block h-6 w-[1px] bg-slate-300"></div>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
             <div>
-              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Frecuencia Crítica (fc)</div>
-              <div class="text-[10px] sm:text-xs font-bold text-yellow-600 font-mono">{{ fc.toFixed(1) }} Hz</div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Frec. Crítica (fc)</div>
+              <div class="text-[10px] sm:text-xs font-bold text-yellow-600 font-mono mt-0.5">{{ fc.toFixed(1) }} Hz</div>
             </div>
           </div>
 
           <!-- Right side: Huge Rw Single-Number Rating Display -->
-          <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-200 pt-2 sm:pt-0">
-            <div class="flex flex-col text-left sm:text-right">
-              <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cálculo Global (ISO 717-1)</span>
-              
-              <!-- Mini selector for primary model display -->
+          <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-200 pt-1.5 sm:pt-0 shrink-0">
+            <div class="flex flex-col text-left sm:text-right leading-none">
+              <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Rw Ponderado</span>
               <select 
                 v-model="primaryModel"
-                class="bg-transparent text-[9px] sm:text-[10px] font-bold text-[#0b5b8c] border-b border-transparent hover:border-[#0b5b8c] focus:outline-none cursor-pointer p-0 text-left sm:text-right uppercase"
+                class="bg-transparent text-[9px] sm:text-[10px] font-black text-[#0b5b8c] border-b border-transparent hover:border-[#0b5b8c] focus:outline-none cursor-pointer p-0 text-left sm:text-right uppercase mt-0.5"
               >
                 <option v-for="opt in modelOptions" :key="opt.key" :value="opt.key">
                   {{ opt.label }}
@@ -121,12 +155,12 @@
               </select>
             </div>
             
-            <div class="flex items-center gap-2 bg-[#edf1f5] px-3 py-1 rounded border border-slate-300 shadow-sm shrink-0">
+            <div class="flex items-center gap-2.5 bg-[#edf1f5] px-3 py-0.5 rounded border border-slate-300 shadow-sm shrink-0">
               <div class="flex flex-col items-center">
                 <span class="text-2xl sm:text-3xl font-black text-[#0b5b8c] font-mono leading-none">
                   {{ primaryRwInfo.val }}
                 </span>
-                <span class="text-[8px] text-[#0b5b8c]/80 font-bold uppercase tracking-tight mt-0.5">dB</span>
+                <span class="text-[8px] text-[#0b5b8c]/80 font-bold uppercase mt-0.5 leading-none">dB</span>
               </div>
               <div class="flex flex-col justify-center text-[9px] font-mono text-slate-500 leading-tight border-l border-slate-300 pl-2">
                 <span>C: {{ primaryRwInfo.C }} dB</span>
@@ -146,11 +180,16 @@
         </div>
       </main>
 
-      <!-- 4. Right Sidebar (Full width on mobile, 500px on desktop) -->
-      <aside class="w-full lg:w-[500px] border-t lg:border-t-0 lg:border-l border-slate-300 flex flex-col bg-[#f8fafc] shrink-0 min-h-0 overflow-hidden">
-        
-        <!-- Top Half: Configuration Panel (Stack height auto on mobile, 50% on desktop) -->
-        <div class="h-auto lg:h-1/2 border-b border-slate-300 flex flex-col shrink-0 min-h-0">
+      <!-- 4. Right Sidebar Area (Only visible on mobile if 'config' or 'results' tabs active) -->
+      <aside 
+        class="w-full lg:w-[500px] border-t lg:border-t-0 lg:border-l border-slate-300 flex flex-col bg-[#f8fafc] shrink-0 min-h-0 overflow-hidden h-full"
+        :class="mobileTab !== 'canvas' ? 'flex' : 'hidden lg:flex'"
+      >
+        <!-- Config Panel: preset list & mechanical parameters (Full screen on mobile under 'config') -->
+        <div 
+          class="h-full lg:h-1/2 border-b border-slate-300 flex flex-col shrink-0 min-h-0"
+          :class="mobileTab === 'config' ? 'flex' : 'hidden lg:flex'"
+        >
           <SidebarMaterials 
             v-model="activeMaterial"
             :presets="presets"
@@ -158,18 +197,21 @@
           />
         </div>
 
-        <!-- Bottom Half: Analysis Panel (Fixed height on mobile, 50% on desktop) -->
-        <div class="h-[420px] lg:h-1/2 flex flex-col bg-white shrink-0 min-h-0">
-          <!-- Mobile-only Model Selector Pills (since vertical strip is hidden) -->
+        <!-- Analysis Panel: Chart vs Table (Full screen on mobile under 'results') -->
+        <div 
+          class="h-full lg:h-1/2 flex flex-col bg-white shrink-0 min-h-0"
+          :class="mobileTab === 'results' ? 'flex' : 'hidden lg:flex'"
+        >
+          <!-- Mobile-only Model Selector Pills -->
           <div class="lg:hidden flex flex-wrap gap-1.5 p-2 bg-slate-50 border-b border-slate-200 shrink-0">
             <button 
               v-for="model in modelOptions" 
               :key="model.key"
               @click="toggleModel(model.key)"
-              class="flex items-center gap-1.5 px-2 py-1 rounded border text-[9px] font-bold transition-all active:scale-95"
+              class="flex items-center gap-1.5 px-2.5 py-1 rounded border text-[9px] font-bold transition-all active:scale-95"
               :class="activeModels[model.key] 
-                ? 'bg-slate-100 text-slate-800 border-slate-400 font-bold' 
-                : 'bg-white text-slate-400 border-slate-200'"
+                ? 'bg-white border-slate-400 text-slate-800' 
+                : 'bg-slate-100 text-slate-400 border-slate-200'"
             >
               <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: activeModels[model.key] ? model.color : '#cbd5e1' }"></span>
               {{ model.label }}
@@ -185,7 +227,7 @@
                 ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
                 : 'text-slate-500 hover:text-slate-800 bg-slate-200/50'"
             >
-              Gráfico de Aislamiento (Chart)
+              Gráfico (Chart)
             </button>
             <button 
               @click="activeAnalysisTab = 'table'"
@@ -194,7 +236,7 @@
                 ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
                 : 'text-slate-500 hover:text-slate-800 bg-slate-200/50'"
             >
-              Tabla de Frecuencias (Table)
+              Tabla (Table)
             </button>
           </div>
 
@@ -217,7 +259,7 @@
         </div>
       </aside>
 
-      <!-- 5. Rightmost Control Strip (Hidden on mobile, strip on desktop) -->
+      <!-- 5. Rightmost Control Strip (Hidden on mobile) -->
       <aside class="hidden lg:flex w-12 bg-[#edf1f5] border-l border-slate-300 flex-col items-center py-4 justify-between shrink-0">
         <!-- Top Toolbar List -->
         <div class="flex flex-col items-center gap-3 w-full">
@@ -257,6 +299,46 @@
       </aside>
 
     </div>
+
+    <!-- 6. Mobile Bottom Navigation Bar (Fitted to bottom, hidden on desktop) -->
+    <nav class="h-12 bg-white border-t border-slate-300 flex items-center justify-around shrink-0 lg:hidden z-30">
+      <!-- Button 1: Canvas / 3D -->
+      <button 
+        @click="mobileTab = 'canvas'"
+        class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
+        :class="mobileTab === 'canvas' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
+      >
+        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span>Vista 3D</span>
+      </button>
+
+      <!-- Button 2: Config / Material Presets -->
+      <button 
+        @click="mobileTab = 'config'"
+        class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
+        :class="mobileTab === 'config' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
+      >
+        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+        <span>Ajustes</span>
+      </button>
+
+      <!-- Button 3: Analysis / Chart / Table -->
+      <button 
+        @click="mobileTab = 'results'"
+        class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
+        :class="mobileTab === 'results' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
+      >
+        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <span>Resultados</span>
+      </button>
+    </nav>
 
     <!-- Technical Info / Acerca de Modal -->
     <div 
@@ -342,6 +424,7 @@ const activeMaterial = ref({ ...presets.value[0] });
 const activeAnalysisTab = ref('chart');
 const primaryModel = ref('davy');
 const showInfoModal = ref(false);
+const mobileTab = ref('canvas'); // 'canvas', 'config', 'results' for 100% mobile optimization
 
 const canvas3dRef = ref(null);
 const importInput = ref(null);
