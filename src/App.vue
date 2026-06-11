@@ -1,19 +1,19 @@
 <template>
   <div class="h-screen w-screen flex flex-col bg-[#edf1f5] text-slate-800 text-xs overflow-hidden font-sans select-none">
     
-    <!-- 1. Top Classical Menu Bar (Desktop Software Style) -->
-    <header class="h-8 bg-white border-b border-slate-300 flex items-center justify-between px-3 shrink-0">
-      <div class="flex items-center gap-4">
+    <!-- 1. Top Menu Bar (Responsive wrapping) -->
+    <header class="h-auto min-h-[32px] bg-white border-b border-slate-300 flex flex-wrap items-center justify-between px-3 py-1.5 md:py-0 shrink-0 gap-2">
+      <div class="flex items-center gap-3.5 flex-wrap">
         <span class="font-black text-[#0b5b8c] tracking-tight">AcoustiCAD v1.2</span>
-        <div class="flex gap-3 text-slate-600">
+        <div class="flex gap-3 text-slate-600 text-[10px] md:text-xs">
           <button class="hover:text-black font-semibold cursor-pointer">Archivo</button>
           <button class="hover:text-black font-semibold cursor-pointer" @click="triggerImport">Importar...</button>
           <button class="hover:text-black font-semibold cursor-pointer" @click="exportToExcel">Exportar Reporte...</button>
           <button class="hover:text-black font-semibold cursor-pointer" @click="showInfoModal = true">Ayuda / Acerca de</button>
         </div>
       </div>
-      <div class="flex items-center gap-2 text-[10px] text-slate-400">
-        <span>Norma de referencia: ISO 12354-1 / ISO 717-1</span>
+      <div class="flex items-center gap-2 text-[9px] md:text-[10px] text-slate-400">
+        <span>Norma: ISO 12354-1 / ISO 717-1</span>
       </div>
     </header>
 
@@ -26,11 +26,11 @@
       class="hidden"
     />
 
-    <!-- Main Workspace -->
-    <div class="flex-1 flex overflow-hidden">
+    <!-- Main Workspace (Vertical stack on mobile, horizontal split on desktop) -->
+    <div class="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-h-0 bg-[#edf1f5]">
       
-      <!-- 2. Left Shortcut Toolbar (Icon-driven CAD Panel) -->
-      <aside class="w-14 bg-white border-r border-slate-300 flex flex-col items-center py-4 justify-between shrink-0">
+      <!-- 2. Left Shortcut Toolbar (Hidden on mobile, vertical strip on desktop) -->
+      <aside class="hidden lg:flex w-14 bg-white border-r border-slate-300 flex-col items-center py-4 justify-between shrink-0">
         <div class="flex flex-col items-center gap-3.5 w-full">
           <!-- Open File Database -->
           <button 
@@ -81,39 +81,39 @@
       </aside>
 
       <!-- 3. Central Canvas Area (Dynamic visual wall and output header) -->
-      <main class="flex-1 flex flex-col bg-white overflow-hidden">
+      <main class="w-full h-[400px] lg:flex-1 lg:h-full flex flex-col bg-white overflow-hidden shrink-0 border-b lg:border-b-0 border-slate-300">
         
-        <!-- Header de Resultados (Top Panel in Main) -->
-        <div class="h-16 border-b border-slate-300 flex justify-between items-center px-6 bg-[#f8fafc] shrink-0">
+        <!-- Header de Resultados (Responsive grid/flex) -->
+        <div class="h-auto min-h-[64px] border-b border-slate-300 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 py-3 sm:py-0 bg-[#f8fafc] shrink-0 gap-3">
           <!-- Left side: Material mechanical summaries -->
-          <div class="flex items-center gap-6">
+          <div class="flex flex-wrap items-center gap-3 sm:gap-5">
             <div>
-              <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Paramento de Ensayo</div>
-              <div class="text-sm font-black text-slate-800">{{ activeMaterial.nombre }}</div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Paramento de Ensayo</div>
+              <div class="text-xs sm:text-sm font-black text-slate-800">{{ activeMaterial.nombre }}</div>
             </div>
-            <div class="h-8 w-[1px] bg-slate-300"></div>
+            <div class="hidden xs:block h-6 w-[1px] bg-slate-300"></div>
             <div>
-              <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Masa Superficial</div>
-              <div class="text-xs font-bold text-slate-700">
-                {{ (activeMaterial.densidad * activeMaterial.espesor).toFixed(2) }} <span class="text-[10px] font-medium text-slate-500">kg/m²</span>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Masa Superficial</div>
+              <div class="text-[10px] sm:text-xs font-bold text-slate-700">
+                {{ (activeMaterial.densidad * activeMaterial.espesor).toFixed(2) }} <span class="text-[9px] font-medium text-slate-500">kg/m²</span>
               </div>
             </div>
-            <div class="h-8 w-[1px] bg-slate-300"></div>
+            <div class="hidden xs:block h-6 w-[1px] bg-slate-300"></div>
             <div>
-              <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Frecuencia Crítica (fc)</div>
-              <div class="text-xs font-bold text-yellow-600 font-mono">{{ fc.toFixed(1) }} Hz</div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Frecuencia Crítica (fc)</div>
+              <div class="text-[10px] sm:text-xs font-bold text-yellow-600 font-mono">{{ fc.toFixed(1) }} Hz</div>
             </div>
           </div>
 
-          <!-- Right side: Huge Rw Single-Number Rating Display (INSUL style) -->
-          <div class="flex items-center gap-4">
-            <div class="flex flex-col text-right">
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cálculo Global (ISO 717-1)</span>
+          <!-- Right side: Huge Rw Single-Number Rating Display -->
+          <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-200 pt-2 sm:pt-0">
+            <div class="flex flex-col text-left sm:text-right">
+              <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cálculo Global (ISO 717-1)</span>
               
               <!-- Mini selector for primary model display -->
               <select 
                 v-model="primaryModel"
-                class="bg-transparent text-[10px] font-bold text-[#0b5b8c] border-b border-transparent hover:border-[#0b5b8c] focus:outline-none cursor-pointer p-0 text-right uppercase"
+                class="bg-transparent text-[9px] sm:text-[10px] font-bold text-[#0b5b8c] border-b border-transparent hover:border-[#0b5b8c] focus:outline-none cursor-pointer p-0 text-left sm:text-right uppercase"
               >
                 <option v-for="opt in modelOptions" :key="opt.key" :value="opt.key">
                   {{ opt.label }}
@@ -121,14 +121,14 @@
               </select>
             </div>
             
-            <div class="flex items-center gap-3 bg-[#edf1f5] px-4 py-1 rounded border border-slate-300 shadow-sm">
+            <div class="flex items-center gap-2 bg-[#edf1f5] px-3 py-1 rounded border border-slate-300 shadow-sm shrink-0">
               <div class="flex flex-col items-center">
-                <span class="text-3xl font-black text-[#0b5b8c] font-mono leading-none">
+                <span class="text-2xl sm:text-3xl font-black text-[#0b5b8c] font-mono leading-none">
                   {{ primaryRwInfo.val }}
                 </span>
-                <span class="text-[9px] text-[#0b5b8c]/80 font-bold uppercase tracking-tight mt-0.5">dB</span>
+                <span class="text-[8px] text-[#0b5b8c]/80 font-bold uppercase tracking-tight mt-0.5">dB</span>
               </div>
-              <div class="flex flex-col justify-center text-[10px] font-mono text-slate-500 leading-normal border-l border-slate-300 pl-2">
+              <div class="flex flex-col justify-center text-[9px] font-mono text-slate-500 leading-tight border-l border-slate-300 pl-2">
                 <span>C: {{ primaryRwInfo.C }} dB</span>
                 <span>Ctr: {{ primaryRwInfo.Ctr }} dB</span>
               </div>
@@ -137,7 +137,7 @@
         </div>
 
         <!-- Three.js Canvas Container -->
-        <div class="flex-1 relative bg-white min-h-0">
+        <div class="flex-grow relative bg-white min-h-0">
           <Canvas3D 
             ref="canvas3dRef"
             :espesor="activeMaterial.espesor"
@@ -146,11 +146,11 @@
         </div>
       </main>
 
-      <!-- 4. Right Sidebar: Configuration and Analysis Stack (Width 500px) -->
-      <aside class="w-[500px] border-l border-slate-300 flex flex-col bg-[#f8fafc] shrink-0 overflow-hidden">
+      <!-- 4. Right Sidebar (Full width on mobile, 500px on desktop) -->
+      <aside class="w-full lg:w-[500px] border-t lg:border-t-0 lg:border-l border-slate-300 flex flex-col bg-[#f8fafc] shrink-0 min-h-0 overflow-hidden">
         
-        <!-- Top Half: Configuration Panel (Single/Double/Triple tabs inside) -->
-        <div class="h-1/2 border-b border-slate-300 min-h-0">
+        <!-- Top Half: Configuration Panel (Stack height auto on mobile, 50% on desktop) -->
+        <div class="h-auto lg:h-1/2 border-b border-slate-300 flex flex-col shrink-0 min-h-0">
           <SidebarMaterials 
             v-model="activeMaterial"
             :presets="presets"
@@ -158,8 +158,24 @@
           />
         </div>
 
-        <!-- Bottom Half: Analysis Panel (Togglable Chart vs Table tabs) -->
-        <div class="h-1/2 flex flex-col bg-white min-h-0">
+        <!-- Bottom Half: Analysis Panel (Fixed height on mobile, 50% on desktop) -->
+        <div class="h-[420px] lg:h-1/2 flex flex-col bg-white shrink-0 min-h-0">
+          <!-- Mobile-only Model Selector Pills (since vertical strip is hidden) -->
+          <div class="lg:hidden flex flex-wrap gap-1.5 p-2 bg-slate-50 border-b border-slate-200 shrink-0">
+            <button 
+              v-for="model in modelOptions" 
+              :key="model.key"
+              @click="toggleModel(model.key)"
+              class="flex items-center gap-1.5 px-2 py-1 rounded border text-[9px] font-bold transition-all active:scale-95"
+              :class="activeModels[model.key] 
+                ? 'bg-slate-100 text-slate-800 border-slate-400 font-bold' 
+                : 'bg-white text-slate-400 border-slate-200'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: activeModels[model.key] ? model.color : '#cbd5e1' }"></span>
+              {{ model.label }}
+            </button>
+          </div>
+
           <!-- Chart / Table selection tab bar -->
           <div class="flex border-b border-slate-300 bg-slate-100 shrink-0">
             <button 
@@ -201,11 +217,10 @@
         </div>
       </aside>
 
-      <!-- 5. Rightmost Control Strip (Auxiliary CAD actions) -->
-      <aside class="w-12 bg-[#edf1f5] border-l border-slate-300 flex flex-col items-center py-4 justify-between shrink-0 select-none">
+      <!-- 5. Rightmost Control Strip (Hidden on mobile, strip on desktop) -->
+      <aside class="hidden lg:flex w-12 bg-[#edf1f5] border-l border-slate-300 flex-col items-center py-4 justify-between shrink-0">
         <!-- Top Toolbar List -->
         <div class="flex flex-col items-center gap-3 w-full">
-          <!-- Active models checkboxes as a tool vertical layout -->
           <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest writing-mode-vertical rotate-180 mb-2">Modelos</span>
           
           <button 
@@ -220,7 +235,6 @@
           >
             <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: activeModels[model.key] ? model.color : '#94a3b8' }"></span>
             
-            <!-- Tooltip helper -->
             <span class="absolute right-10 bg-slate-900 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-md">
               {{ model.label }}
             </span>
@@ -250,11 +264,11 @@
       class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       @click.self="showInfoModal = false"
     >
-      <div class="bg-white border border-slate-400 rounded-lg shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
+      <div class="bg-white border border-slate-400 rounded shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
         <!-- Modal Header -->
         <div class="bg-[#0b5b8c] text-white px-4 py-3 flex items-center justify-between">
           <span class="font-bold text-sm">Información de AcoustiCAD</span>
-          <button @click="showInfoModal = false" class="hover:text-slate-200 text-white cursor-pointer font-bold">
+          <button @click="showInfoModal = false" class="hover:text-slate-200 text-white cursor-pointer font-bold text-lg leading-none">
             &times;
           </button>
         </div>
@@ -363,7 +377,6 @@ const toggleAllModels = () => {
   Object.keys(activeModels.value).forEach(k => {
     activeModels.value[k] = !allOn;
   });
-  // Make sure at least one is on
   if (!allOn) {
     activeModels.value.davy = true;
   }
@@ -416,15 +429,11 @@ const rwVals = computed(() => {
   };
 });
 
-// Primary Rw information card computed properties
 const primaryRwInfo = computed(() => {
   const key = primaryModel.value;
   const val = rwVals.value[key] || 0;
-  
-  // Pink noise correction (C) and road traffic correction (Ctr) estimation
   const C = -1;
   const Ctr = -Math.round(2 + val * 0.05);
-  
   const label = modelOptions.find(o => o.key === key)?.label || 'Modelo';
   return { val, C, Ctr, name: label };
 });
@@ -495,8 +504,6 @@ const onFileImport = (event) => {
 
 const exportToExcel = () => {
   const material = activeMaterial.value;
-  
-  // Sheet 1: Material properties
   const materialData = [
     { "Propiedad": "Material", "Valor": material.nombre },
     { "Propiedad": "Descripción", "Valor": material.descripcion || '' },
@@ -510,17 +517,14 @@ const exportToExcel = () => {
   ];
   const wsProps = utils.json_to_sheet(materialData);
   
-  // Sheet 2: Rw values comparison
   const rwData = [];
   if (activeModels.value.massLawTheoretical) rwData.push({ "Modelo Acústico": "Ley de Masas Teórica", "Rw (dB)": rwVals.value.massLawTheoretical });
   if (activeModels.value.massLawCorrected) rwData.push({ "Modelo Acústico": "Ley de Masas Corregida", "Rw (dB)": rwVals.value.massLawCorrected });
   if (activeModels.value.iso12354) rwData.push({ "Modelo Acústico": "Norma ISO 12354-1", "Rw (dB)": rwVals.value.iso12354 });
   if (activeModels.value.sharp) rwData.push({ "Modelo Acústico": "Modelo Sharp (1978)", "Rw (dB)": rwVals.value.sharp });
   if (activeModels.value.davy) rwData.push({ "Modelo Acústico": "Modelo Davy (2009)", "Rw (dB)": rwVals.value.davy });
-  
   const wsRw = utils.json_to_sheet(rwData);
   
-  // Sheet 3: Full Curve Values table
   const curveData = FRECUENCIAS_TERCIO.map((f, idx) => {
     const row = { "Frecuencia (Hz)": f };
     if (activeModels.value.massLawTheoretical) row["Ley de Masas Teórica (dB)"] = predictions.value.massLawTheoretical[idx];
