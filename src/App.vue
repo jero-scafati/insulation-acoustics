@@ -418,7 +418,7 @@ const FRECUENCIAS_TERCIO = [
 ];
 
 const presets = ref([...materialPresets]);
-const activeMaterial = ref({ ...presets.value[0] });
+const activeMaterial = ref({ ...presets.value[6] });
 
 // UI conmutable tab states
 const activeAnalysisTab = ref('chart');
