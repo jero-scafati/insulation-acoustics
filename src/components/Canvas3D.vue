@@ -66,6 +66,10 @@ const props = defineProps({
   rwValue: {
     type: Number,
     default: 30
+  },
+  visible: {
+    type: Boolean,
+    default: true
   }
 });
 
@@ -146,7 +150,7 @@ const getMaterialProps = (name, baseColor) => {
 const init3D = () => {
   if (!canvasContainer.value) return;
 
-  const width = canvasContainer.value.clientWidth;
+  const width = canvasContainer.value.clientWidth || 400;
   const height = canvasContainer.value.clientHeight || 240;
 
   // 1. Create Scene
@@ -415,6 +419,14 @@ watch(() => props.espesor, (newVal) => {
 
 watch(() => [props.color, props.materialNombre], () => {
   updateWallMaterialType();
+});
+
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    setTimeout(() => {
+      handleResize();
+    }, 60);
+  }
 });
 
 onMounted(() => {

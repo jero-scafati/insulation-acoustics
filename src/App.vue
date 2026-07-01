@@ -114,7 +114,7 @@
         </div>
       </aside>      <!-- 3. Central Analysis Dashboard (Fills screen on mobile for results/canvas) -->
       <main 
-        class="w-full h-full lg:flex-grow flex flex-col bg-[#edf1f5] overflow-hidden shrink-0 min-h-0"
+        class="w-full lg:w-0 lg:flex-1 h-full flex flex-col bg-[#edf1f5] overflow-hidden min-h-0"
         :class="mobileTab !== 'config' ? 'flex' : 'hidden lg:flex'"
       >
         <!-- Header de Resultados (Compact, responsive columns) -->
@@ -272,6 +272,7 @@
               :color="activeMaterial.color"
               :materialNombre="activeMaterial.nombre"
               :rwValue="primaryRwInfo.val"
+              :visible="activeCentralTab === 'canvas3d'"
               class="w-full h-full animate-fade-in"
             />
           </div>
