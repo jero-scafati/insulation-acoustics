@@ -90,6 +90,20 @@ const getChartDatasets = () => {
     });
   }
 
+  if (props.activeModels.cremer) {
+    datasets.push({
+      label: 'Modelo Cremer (Teórico)',
+      data: props.predictions.cremer || [],
+      borderColor: '#a855f7', // purple
+      backgroundColor: 'rgba(168, 85, 247, 0.05)',
+      borderWidth: 2,
+      tension: 0.15,
+      pointRadius: 2,
+      pointHoverRadius: 5
+    });
+  }
+
+
   if (props.activeModels.sharp) {
     datasets.push({
       label: 'Modelo Sharp (1978)',

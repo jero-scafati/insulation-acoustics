@@ -112,32 +112,47 @@
             </svg>
           </button>
         </div>
-      </aside>
-
-      <!-- 3. Central Canvas Area (Fills screen on mobile if 'canvas' active) -->
+      </aside>      <!-- 3. Central Analysis Dashboard (Fills screen on mobile for results/canvas) -->
       <main 
-        class="w-full h-full lg:flex-1 flex flex-col bg-white overflow-hidden shrink-0"
-        :class="mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'"
+        class="w-full h-full lg:flex-grow flex flex-col bg-[#edf1f5] overflow-hidden shrink-0 min-h-0"
+        :class="mobileTab !== 'config' ? 'flex' : 'hidden lg:flex'"
       >
         <!-- Header de Resultados (Compact, responsive columns) -->
         <div class="h-auto min-h-[64px] border-b border-slate-300 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 py-2 sm:py-0 bg-[#f8fafc] shrink-0 gap-2">
           <!-- Left side: Material mechanical summaries -->
-          <div class="flex flex-wrap items-center gap-3 sm:gap-5">
+          <div class="flex flex-wrap items-center gap-3 sm:gap-4">
             <div>
               <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Paramento</div>
               <div class="text-xs sm:text-sm font-black text-[#0b5b8c] mt-0.5">{{ activeMaterial.nombre }}</div>
             </div>
             <div class="h-6 w-[1px] bg-slate-200"></div>
             <div>
-              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Masa Superficial</div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Masa Sup.</div>
               <div class="text-[10px] sm:text-xs font-bold text-slate-700 mt-0.5">
                 {{ (activeMaterial.densidad * activeMaterial.espesor).toFixed(2) }} <span class="text-[9px] font-medium text-slate-500">kg/m²</span>
               </div>
             </div>
             <div class="h-6 w-[1px] bg-slate-200"></div>
             <div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Rigidez (B)</div>
+              <div class="text-[10px] sm:text-xs font-bold text-slate-700 font-mono mt-0.5">
+                {{ stiffnessB.toExponential(2) }} <span class="text-[8px] font-medium text-slate-500">N·m</span>
+              </div>
+            </div>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
+            <div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Modo (f11)</div>
+              <div class="text-[10px] sm:text-xs font-bold text-slate-700 font-mono mt-0.5">{{ f11Val.toFixed(1) }} Hz</div>
+            </div>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
+            <div>
               <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Frec. Crítica (fc)</div>
               <div class="text-[10px] sm:text-xs font-bold text-yellow-600 font-mono mt-0.5">{{ fc.toFixed(1) }} Hz</div>
+            </div>
+            <div class="h-6 w-[1px] bg-slate-200"></div>
+            <div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Frec. Densidad (fd)</div>
+              <div class="text-[10px] sm:text-xs font-bold text-yellow-600 font-mono mt-0.5">{{ fdVal.toFixed(1) }} Hz</div>
             </div>
           </div>
 
@@ -170,26 +185,60 @@
           </div>
         </div>
 
-        <!-- Three.js Canvas Container -->
-        <div class="flex-grow relative bg-white min-h-0">
-          <Canvas3D 
-            ref="canvas3dRef"
-            :espesor="activeMaterial.espesor"
-            :color="activeMaterial.color"
-          />
+        <!-- Dashboard Workspace Container: Chart and Table side-by-side on desktop, tabbed on mobile -->
+        <div class="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 p-3 gap-3">
+          <!-- Left Panel: Acoustic Chart -->
+          <div 
+            class="flex-grow min-h-0 relative h-full flex flex-col gap-2"
+            :class="mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'"
+          >
+            <!-- Mobile-only Model Toggles inside the chart container -->
+            <div class="lg:hidden flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-300 rounded-lg shrink-0">
+              <button 
+                v-for="model in modelOptions" 
+                :key="model.key"
+                @click="toggleModel(model.key)"
+                class="flex items-center gap-1.5 px-2.5 py-1 rounded border text-[9px] font-bold transition-all active:scale-95 cursor-pointer"
+                :class="activeModels[model.key] 
+                  ? 'bg-white border-slate-400 text-slate-800' 
+                  : 'bg-slate-100 text-slate-400 border-slate-200'"
+              >
+                <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: activeModels[model.key] ? model.color : '#cbd5e1' }"></span>
+                {{ model.label }}
+              </button>
+            </div>
+
+            <AcousticChart 
+              class="w-full h-full"
+              :frecuencias="FRECUENCIAS_TERCIO"
+              :predictions="predictions"
+              :activeModels="activeModels"
+            />
+          </div>
+
+          <!-- Right Panel: Results Table -->
+          <div 
+            class="w-full lg:w-[380px] min-h-0 relative h-full shrink-0 flex flex-col"
+            :class="mobileTab === 'results' ? 'flex' : 'hidden lg:flex'"
+          >
+            <ResultsTable 
+              class="w-full h-full"
+              :frecuencias="FRECUENCIAS_TERCIO"
+              :predictions="predictions"
+              :fc="fc"
+              :activeModels="activeModels"
+            />
+          </div>
         </div>
       </main>
 
-      <!-- 4. Right Sidebar Area (Only visible on mobile if 'config' or 'results' tabs active) -->
+      <!-- 4. Right Sidebar Area (Only visible on mobile if 'config' tab active) -->
       <aside 
-        class="w-full lg:w-[500px] border-t lg:border-t-0 lg:border-l border-slate-300 flex flex-col bg-[#f8fafc] shrink-0 min-h-0 overflow-hidden h-full"
-        :class="mobileTab !== 'canvas' ? 'flex' : 'hidden lg:flex'"
+        class="w-full lg:w-[420px] border-t lg:border-t-0 lg:border-l border-slate-300 flex flex-col bg-[#f8fafc] shrink-0 min-h-0 overflow-hidden h-full"
+        :class="mobileTab === 'config' ? 'flex' : 'hidden lg:flex'"
       >
-        <!-- Config Panel: preset list & mechanical parameters (Full screen on mobile under 'config') -->
-        <div 
-          class="h-full lg:h-1/2 border-b border-slate-300 flex flex-col shrink-0 min-h-0"
-          :class="mobileTab === 'config' ? 'flex' : 'hidden lg:flex'"
-        >
+        <!-- Config Panel: preset list & mechanical parameters -->
+        <div class="flex-grow flex flex-col min-h-0 overflow-y-auto">
           <SidebarMaterials 
             v-model="activeMaterial"
             :presets="presets"
@@ -197,65 +246,16 @@
           />
         </div>
 
-        <!-- Analysis Panel: Chart vs Table (Full screen on mobile under 'results') -->
-        <div 
-          class="h-full lg:h-1/2 flex flex-col bg-white shrink-0 min-h-0"
-          :class="mobileTab === 'results' ? 'flex' : 'hidden lg:flex'"
-        >
-          <!-- Mobile-only Model Selector Pills -->
-          <div class="lg:hidden flex flex-wrap gap-1.5 p-2 bg-slate-50 border-b border-slate-200 shrink-0">
-            <button 
-              v-for="model in modelOptions" 
-              :key="model.key"
-              @click="toggleModel(model.key)"
-              class="flex items-center gap-1.5 px-2.5 py-1 rounded border text-[9px] font-bold transition-all active:scale-95"
-              :class="activeModels[model.key] 
-                ? 'bg-white border-slate-400 text-slate-800' 
-                : 'bg-slate-100 text-slate-400 border-slate-200'"
-            >
-              <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: activeModels[model.key] ? model.color : '#cbd5e1' }"></span>
-              {{ model.label }}
-            </button>
-          </div>
-
-          <!-- Chart / Table selection tab bar -->
-          <div class="flex border-b border-slate-300 bg-slate-100 shrink-0">
-            <button 
-              @click="activeAnalysisTab = 'chart'"
-              class="px-4 py-2 border-r border-slate-300 font-bold text-[11px] uppercase tracking-wide transition-all"
-              :class="activeAnalysisTab === 'chart' 
-                ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
-                : 'text-slate-500 hover:text-slate-800 bg-slate-200/50'"
-            >
-              Gráfico (Chart)
-            </button>
-            <button 
-              @click="activeAnalysisTab = 'table'"
-              class="px-4 py-2 border-r border-slate-300 font-bold text-[11px] uppercase tracking-wide transition-all"
-              :class="activeAnalysisTab === 'table' 
-                ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
-                : 'text-slate-500 hover:text-slate-800 bg-slate-200/50'"
-            >
-              Tabla (Table)
-            </button>
-          </div>
-
-          <!-- Tab display area -->
-          <div class="flex-grow min-h-0 relative p-3 bg-white">
-            <AcousticChart 
-              v-show="activeAnalysisTab === 'chart'"
-              :frecuencias="FRECUENCIAS_TERCIO"
-              :predictions="predictions"
-              :activeModels="activeModels"
-            />
-            <ResultsTable 
-              v-show="activeAnalysisTab === 'table'"
-              :frecuencias="FRECUENCIAS_TERCIO"
-              :predictions="predictions"
-              :fc="fc"
-              :activeModels="activeModels"
-            />
-          </div>
+        <!-- Visualizer 3D Panel (Acts as a small bottom preview card on desktop/config) -->
+        <div class="h-[240px] border-t border-slate-300 bg-white p-3 shrink-0 relative flex flex-col">
+          <Canvas3D 
+            ref="canvas3dRef"
+            :espesor="activeMaterial.espesor"
+            :color="activeMaterial.color"
+            :materialNombre="activeMaterial.nombre"
+            :rwValue="primaryRwInfo.val"
+            class="w-full h-full animate-fade-in"
+          />
         </div>
       </aside>
 
@@ -269,7 +269,7 @@
             v-for="model in modelOptions" 
             :key="model.key"
             @click="toggleModel(model.key)"
-            class="w-8 h-8 rounded flex items-center justify-center transition-all border shadow-sm relative group active:scale-95"
+            class="w-8 h-8 rounded flex items-center justify-center transition-all border shadow-sm relative group active:scale-95 cursor-pointer"
             :class="activeModels[model.key] 
               ? 'bg-white border-slate-400 text-slate-800 font-bold' 
               : 'bg-slate-200/60 border-slate-300 text-slate-400'"
@@ -287,7 +287,7 @@
         <div class="flex flex-col items-center gap-3">
           <button 
             @click="reset3D"
-            class="w-8 h-8 hover:bg-slate-200 text-slate-600 rounded flex items-center justify-center transition-all border border-slate-300 bg-white shadow-sm"
+            class="w-8 h-8 hover:bg-slate-200 text-slate-600 rounded flex items-center justify-center transition-all border border-slate-300 bg-white shadow-sm cursor-pointer"
             title="Centrar Visualizador 3D"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,17 +302,16 @@
 
     <!-- 6. Mobile Bottom Navigation Bar (Fitted to bottom, hidden on desktop) -->
     <nav class="h-12 bg-white border-t border-slate-300 flex items-center justify-around shrink-0 lg:hidden z-30">
-      <!-- Button 1: Canvas / 3D -->
+      <!-- Button 1: Gráfico -->
       <button 
         @click="mobileTab = 'canvas'"
         class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
         :class="mobileTab === 'canvas' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
       >
         <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
-        <span>Vista 3D</span>
+        <span>Gráfico</span>
       </button>
 
       <!-- Button 2: Config / Material Presets -->
@@ -327,16 +326,16 @@
         <span>Ajustes</span>
       </button>
 
-      <!-- Button 3: Analysis / Chart / Table -->
+      <!-- Button 3: Tabla -->
       <button 
         @click="mobileTab = 'results'"
         class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
         :class="mobileTab === 'results' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
       >
         <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-3-8v8m6-8v8M3 6h18a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2z" />
         </svg>
-        <span>Resultados</span>
+        <span>Tabla</span>
       </button>
     </nav>
 
@@ -399,7 +398,8 @@ import materialPresets from './assets/materiales.json';
 
 // Acoustic Engine modules
 import { calcularLeyMasasTeorica, calcularLeyMasasCorregida } from './acousticEngine/massLaw.js';
-import { calcularISO12354, calcularFrecuenciaCritica } from './acousticEngine/iso12354.js';
+import { calcularISO12354, calcularFrecuenciaCritica, calcularRigidezFlexion, calcularF11, calcularFd } from './acousticEngine/iso12354.js';
+import { calcularCremer } from './acousticEngine/cremer.js';
 import { calcularSharp } from './acousticEngine/sharp.js';
 import { calcularDavy } from './acousticEngine/davy.js';
 import { calcularRw } from './acousticEngine/weightedIndex.js';
@@ -434,6 +434,7 @@ const activeModels = ref({
   massLawTheoretical: true,
   massLawCorrected: true,
   iso12354: true,
+  cremer: true,
   sharp: true,
   davy: true
 });
@@ -442,6 +443,7 @@ const modelOptions = [
   { key: 'massLawTheoretical', label: 'L. Masas Teórica', color: '#38bdf8' },
   { key: 'massLawCorrected', label: 'L. Masas Corregida', color: '#0284c7' },
   { key: 'iso12354', label: 'Norma ISO 12354', color: '#10b981' },
+  { key: 'cremer', label: 'Modelo Cremer (Teor.)', color: '#a855f7' },
   { key: 'sharp', label: 'Modelo Sharp (1978)', color: '#ec4899' },
   { key: 'davy', label: 'Modelo Davy (2009)', color: '#eab308' }
 ];
@@ -481,7 +483,7 @@ const addNewPresets = (newPresets) => {
 };
 
 const fc = computed(() => {
-  const nu = activeMaterial.value.poisson || 0;
+  const nu = activeMaterial.value.poisson !== undefined ? activeMaterial.value.poisson : 0.3;
   return calcularFrecuenciaCritica(
     activeMaterial.value.young,
     activeMaterial.value.densidad,
@@ -490,12 +492,28 @@ const fc = computed(() => {
   );
 });
 
+const stiffnessB = computed(() => {
+  const nu = activeMaterial.value.poisson !== undefined ? activeMaterial.value.poisson : 0.3;
+  return calcularRigidezFlexion(activeMaterial.value.young, activeMaterial.value.espesor, nu);
+});
+
+const f11Val = computed(() => {
+  const m = activeMaterial.value.densidad * activeMaterial.value.espesor;
+  return calcularF11(stiffnessB.value, m, 1.0, 1.5);
+});
+
+const fdVal = computed(() => {
+  const nu = activeMaterial.value.poisson !== undefined ? activeMaterial.value.poisson : 0.3;
+  return calcularFd(activeMaterial.value.young, activeMaterial.value.densidad, activeMaterial.value.espesor, nu);
+});
+
 const predictions = computed(() => {
   const material = activeMaterial.value;
   return {
     massLawTheoretical: calcularLeyMasasTeorica(material, FRECUENCIAS_TERCIO),
     massLawCorrected: calcularLeyMasasCorregida(material, FRECUENCIAS_TERCIO),
     iso12354: calcularISO12354(material, FRECUENCIAS_TERCIO),
+    cremer: calcularCremer(material, FRECUENCIAS_TERCIO),
     sharp: calcularSharp(material, FRECUENCIAS_TERCIO),
     davy: calcularDavy(material, FRECUENCIAS_TERCIO)
   };
@@ -507,6 +525,7 @@ const rwVals = computed(() => {
     massLawTheoretical: calcularRw(FRECUENCIAS_TERCIO, preds.massLawTheoretical),
     massLawCorrected: calcularRw(FRECUENCIAS_TERCIO, preds.massLawCorrected),
     iso12354: calcularRw(FRECUENCIAS_TERCIO, preds.iso12354),
+    cremer: calcularRw(FRECUENCIAS_TERCIO, preds.cremer),
     sharp: calcularRw(FRECUENCIAS_TERCIO, preds.sharp),
     davy: calcularRw(FRECUENCIAS_TERCIO, preds.davy)
   };
@@ -596,7 +615,10 @@ const exportToExcel = () => {
     { "Propiedad": "Factor de Amortiguamiento (eta)", "Valor": material.amortiguamiento },
     { "Propiedad": "Coeficiente de Poisson (nu)", "Valor": material.poisson },
     { "Propiedad": "Masa Superficial Calculada (kg/m²)", "Valor": Number((material.densidad * material.espesor).toFixed(2)) },
-    { "Propiedad": "Frecuencia Crítica Calculada fc (Hz)", "Valor": Number(fc.value.toFixed(1)) }
+    { "Propiedad": "Rigidez a la Flexión B (N·m)", "Valor": stiffnessB.value.toExponential(3) },
+    { "Propiedad": "Frecuencia Modo Fundamental f11 (Hz)", "Valor": Number(f11Val.value.toFixed(1)) },
+    { "Propiedad": "Frecuencia Crítica Calculada fc (Hz)", "Valor": Number(fc.value.toFixed(1)) },
+    { "Propiedad": "Frecuencia de Densidad fd (Hz)", "Valor": Number(fdVal.value.toFixed(1)) }
   ];
   const wsProps = utils.json_to_sheet(materialData);
   
@@ -604,6 +626,7 @@ const exportToExcel = () => {
   if (activeModels.value.massLawTheoretical) rwData.push({ "Modelo Acústico": "Ley de Masas Teórica", "Rw (dB)": rwVals.value.massLawTheoretical });
   if (activeModels.value.massLawCorrected) rwData.push({ "Modelo Acústico": "Ley de Masas Corregida", "Rw (dB)": rwVals.value.massLawCorrected });
   if (activeModels.value.iso12354) rwData.push({ "Modelo Acústico": "Norma ISO 12354-1", "Rw (dB)": rwVals.value.iso12354 });
+  if (activeModels.value.cremer) rwData.push({ "Modelo Acústico": "Modelo Cremer (Teor.)", "Rw (dB)": rwVals.value.cremer });
   if (activeModels.value.sharp) rwData.push({ "Modelo Acústico": "Modelo Sharp (1978)", "Rw (dB)": rwVals.value.sharp });
   if (activeModels.value.davy) rwData.push({ "Modelo Acústico": "Modelo Davy (2009)", "Rw (dB)": rwVals.value.davy });
   const wsRw = utils.json_to_sheet(rwData);
@@ -613,6 +636,7 @@ const exportToExcel = () => {
     if (activeModels.value.massLawTheoretical) row["Ley de Masas Teórica (dB)"] = predictions.value.massLawTheoretical[idx];
     if (activeModels.value.massLawCorrected) row["Ley de Masas Corregida (dB)"] = predictions.value.massLawCorrected[idx];
     if (activeModels.value.iso12354) row["ISO 12354-1 (dB)"] = predictions.value.iso12354[idx];
+    if (activeModels.value.cremer) row["Modelo Cremer (dB)"] = predictions.value.cremer[idx];
     if (activeModels.value.sharp) row["Modelo Sharp (dB)"] = predictions.value.sharp[idx];
     if (activeModels.value.davy) row["Modelo Davy (dB)"] = predictions.value.davy[idx];
     return row;

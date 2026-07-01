@@ -15,7 +15,7 @@
       <table class="w-full text-left border-collapse min-w-[520px]">
         <thead class="bg-slate-100 sticky top-0 z-10 text-[9px] font-bold text-slate-600 border-b border-slate-200">
           <tr>
-            <th class="px-2.5 py-2 text-left font-bold w-16 bg-slate-100 border-r border-slate-200">Frec. [Hz]</th>
+            <th class="px-2.5 py-2 text-left font-bold w-16 bg-slate-100 border-r border-slate-200 sticky left-0 z-20">Frec. [Hz]</th>
             <th v-if="activeModels.massLawTheoretical" class="px-2 py-2 font-bold truncate">
               <span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style="background-color: #38bdf8;"></span>
               <span class="align-middle">M. Teor.</span>
@@ -27,6 +27,10 @@
             <th v-if="activeModels.iso12354" class="px-2 py-2 font-bold truncate">
               <span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style="background-color: #10b981;"></span>
               <span class="align-middle">ISO 12354</span>
+            </th>
+            <th v-if="activeModels.cremer" class="px-2 py-2 font-bold truncate">
+              <span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style="background-color: #a855f7;"></span>
+              <span class="align-middle">Cremer</span>
             </th>
             <th v-if="activeModels.sharp" class="px-2 py-2 font-bold truncate">
               <span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style="background-color: #ec4899;"></span>
@@ -44,7 +48,7 @@
             :key="f"
             class="hover:bg-slate-50 transition-colors"
           >
-            <td class="px-2.5 py-1 text-slate-500 font-bold bg-slate-50 font-sans border-r border-slate-200">
+            <td class="px-2.5 py-1 text-slate-500 font-bold bg-slate-50 font-sans border-r border-slate-200 sticky left-0 z-10">
               {{ f }}
             </td>
             <td v-if="activeModels.massLawTheoretical" class="px-2 py-1 text-slate-600">
@@ -55,6 +59,9 @@
             </td>
             <td v-if="activeModels.iso12354" class="px-2 py-1" :class="{'text-emerald-700 font-bold bg-emerald-50/30': isCoincidence(f)}">
               {{ predictions.iso12354[idx] }}
+            </td>
+            <td v-if="activeModels.cremer" class="px-2 py-1" :class="{'text-purple-700 font-bold bg-purple-50/30': isCoincidence(f)}">
+              {{ predictions.cremer[idx] }}
             </td>
             <td v-if="activeModels.sharp" class="px-2 py-1" :class="{'text-pink-700 font-bold bg-pink-50/30': isCoincidence(f)}">
               {{ predictions.sharp[idx] }}
