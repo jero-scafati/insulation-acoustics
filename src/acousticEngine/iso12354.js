@@ -23,6 +23,36 @@ export function calcularFrecuenciaCritica(E, densidad, espesor, nu = 0.3, c = 34
 }
 
 /**
+ * Calculates the bending stiffness (B) of a plate.
+ * B = (E * t^3) / (12 * (1 - nu^2))
+ */
+export function calcularRigidezFlexion(E, espesor, nu = 0.3) {
+  if (E <= 0 || espesor <= 0) return 0;
+  return (E * Math.pow(espesor, 3)) / (12 * (1 - Math.pow(nu, 2)));
+}
+
+/**
+ * Calculates the fundamental Mode (1,1) frequency of a rectangular simply supported plate.
+ * f11 = (pi / 2) * sqrt(B / m) * (1 / lx^2 + 1 / ly^2)
+ */
+export function calcularF11(B, m, lx = 1.0, ly = 1.5) {
+  if (B <= 0 || m <= 0 || lx <= 0 || ly <= 0) return 0;
+  return (Math.PI / 2) * Math.sqrt(B / m) * (1 / Math.pow(lx, 2) + 1 / Math.pow(ly, 2));
+}
+
+/**
+ * Calculates the dilatational frequency (fd) of a plate.
+ * fd = (cL / (2 * pi * t)) where cL = sqrt(E * (1 - nu) / (rho * (1 + nu) * (1 - 2*nu)))
+ */
+export function calcularFd(E, densidad, thickness, nu = 0.3) {
+  if (E <= 0 || densidad <= 0 || thickness <= 0) return 0;
+  const nu_safe = nu >= 0.5 ? 0.49 : nu; // Prevent division by zero
+  const cL = Math.sqrt((E * (1 - nu_safe)) / (densidad * (1 + nu_safe) * (1 - 2 * nu_safe)));
+  return cL / (2 * Math.PI * thickness);
+}
+
+
+/**
  * Calculates transmission loss using the ISO 12354-1 Annex B method.
  * 
  * @param {Object} material
