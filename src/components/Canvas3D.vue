@@ -2,8 +2,8 @@
   <div class="relative w-full h-full border border-slate-300 bg-white rounded-lg overflow-hidden flex flex-col">
     <!-- Header Controls -->
     <div class="absolute top-2 left-2 z-10 bg-white/95 border border-slate-200 px-2 py-0.5 rounded text-[9px] font-bold text-slate-500 pointer-events-none shadow-sm flex items-center gap-1.5">
-      <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-      SIMULACIÓN DE PROPAGACIÓN ONDAS
+      <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+      VISTA DE DISEÑO 3D
     </div>
     
     <div class="absolute bottom-2 right-2 z-10">
@@ -26,18 +26,6 @@
     >
       <span class="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
       {{ (espesor * 1000).toFixed(1) }} mm
-    </div>
-    
-    <!-- Legend for Waves -->
-    <div class="absolute bottom-2 left-2 z-10 bg-white/90 border border-slate-200 p-1.5 rounded text-[8px] font-bold text-slate-500 pointer-events-none shadow-sm flex flex-col gap-1 leading-none">
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-0.5 bg-[#0284c7]"></span>
-        <span>Onda Incidente (Sonido)</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-0.5 bg-[#ec4899]"></span>
-        <span>Onda Transmitida (Pérdida)</span>
-      </div>
     </div>
 
     <!-- Canvas Container -->
@@ -79,10 +67,6 @@ let scene, camera, renderer, controls;
 let wallMesh, wireframeMesh;
 let dimensionLine, tick1, tick2;
 let animationFrameId;
-
-// Wave lists
-const incidentRings = [];
-const transmittedRings = [];
 
 // Procedural materials definition based on physical properties
 const getMaterialProps = (name, baseColor) => {
@@ -224,91 +208,10 @@ const init3D = () => {
   // Create dimension lines
   drawDimensionLines(props.espesor);
 
-  // 7. Setup Wave Geometry
-  // We make rings in XY plane centered on Z
-  const ringGeom = new THREE.RingGeometry(0.3, 0.315, 64);
-
-  // Incident waves (left, blue)
-  for (let i = 0; i < 3; i++) {
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0x0284c7, // incident blue
-      transparent: true,
-      opacity: 0,
-      side: THREE.DoubleSide,
-      depthWrite: false
-    });
-    const ring = new THREE.Mesh(ringGeom, mat);
-    scene.add(ring);
-    incidentRings.push({
-      mesh: ring,
-      phase: i / 3
-    });
-  }
-
-  // Transmitted waves (right, pink)
-  for (let i = 0; i < 3; i++) {
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0xec4899, // transmitted pink
-      transparent: true,
-      opacity: 0,
-      side: THREE.DoubleSide,
-      depthWrite: false
-    });
-    const ring = new THREE.Mesh(ringGeom, mat);
-    scene.add(ring);
-    transmittedRings.push({
-      mesh: ring,
-      phase: i / 3
-    });
-  }
-
-  // 8. Animation Loop
+  // 7. Animation Loop
   const animate = () => {
     animationFrameId = requestAnimationFrame(animate);
     controls.update();
-
-    // Wave animation timing
-    const time = Date.now() * 0.0018;
-    const visualScale = Math.min(1.8, Math.max(0.04, props.espesor * 4));
-    const zHalf = visualScale / 2;
-
-    // 1. Update Incident rings (traveling from Z = -2.2 to Z = -zHalf)
-    incidentRings.forEach((ring) => {
-      let progress = (time * 0.4 + ring.phase) % 1.0;
-      
-      const zStart = -2.2;
-      const zEnd = -zHalf;
-      ring.mesh.position.z = zStart + (zEnd - zStart) * progress;
-
-      // Scale expands slightly as it propagates
-      const scaleVal = 0.4 + progress * 0.9;
-      ring.mesh.scale.set(scaleVal, scaleVal, 1);
-
-      // Opacity peaks in the middle and fades out near the wall
-      ring.mesh.material.opacity = Math.sin(progress * Math.PI) * 0.45;
-    });
-
-    // 2. Update Transmitted rings (emerging from Z = zHalf to Z = 2.2)
-    // Transmitted wave strength is modulated by Rw value
-    // High Rw (> 50 dB) -> waves barely visible
-    // Low Rw (< 20 dB) -> waves highly visible
-    const attenuation = Math.max(0, Math.min(1.0, (60 - props.rwValue) / 45));
-
-    transmittedRings.forEach((ring) => {
-      let progress = (time * 0.4 + ring.phase) % 1.0;
-
-      const zStart = zHalf;
-      const zEnd = 2.2;
-      ring.mesh.position.z = zStart + (zEnd - zStart) * progress;
-
-      // Scale expands
-      const scaleVal = 0.4 + progress * 0.9;
-      ring.mesh.scale.set(scaleVal, scaleVal, 1);
-
-      // Opacity modulated by attenuation
-      ring.mesh.material.opacity = Math.sin(progress * Math.PI) * 0.45 * attenuation;
-    });
-
     renderer.render(scene, camera);
     updateLabelPosition();
   };
@@ -447,16 +350,6 @@ onUnmounted(() => {
   if (dimensionLine) dimensionLine.geometry.dispose();
   if (tick1) tick1.geometry.dispose();
   if (tick2) tick2.geometry.dispose();
-
-  incidentRings.forEach(ring => {
-    ring.mesh.geometry.dispose();
-    ring.mesh.material.dispose();
-  });
-  
-  transmittedRings.forEach(ring => {
-    ring.mesh.geometry.dispose();
-    ring.mesh.material.dispose();
-  });
 });
 
 defineExpose({ resetCamera });

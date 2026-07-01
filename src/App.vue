@@ -223,8 +223,8 @@
             v-show="activeCentralTab === 'chart'"
             class="w-full h-full flex flex-col gap-2"
           >
-            <!-- Mobile-only Model Toggles inside the chart container -->
-            <div class="lg:hidden flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-300 rounded-lg shrink-0">
+            <!-- Model Toggles inside the chart container -->
+            <div class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-300 rounded-lg shrink-0">
               <button 
                 v-for="model in modelOptions" 
                 :key="model.key"
@@ -294,46 +294,6 @@
           />
         </div>
       </aside>
-
-      <!-- 5. Rightmost Control Strip (Hidden on mobile) -->
-      <aside class="hidden lg:flex w-12 bg-[#edf1f5] border-l border-slate-300 flex-col items-center py-4 justify-between shrink-0">
-        <!-- Top Toolbar List -->
-        <div class="flex flex-col items-center gap-3 w-full">
-          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest writing-mode-vertical rotate-180 mb-2">Modelos</span>
-          
-          <button 
-            v-for="model in modelOptions" 
-            :key="model.key"
-            @click="toggleModel(model.key)"
-            class="w-8 h-8 rounded flex items-center justify-center transition-all border shadow-sm relative group active:scale-95 cursor-pointer"
-            :class="activeModels[model.key] 
-              ? 'bg-white border-slate-400 text-slate-800 font-bold' 
-              : 'bg-slate-200/60 border-slate-300 text-slate-400'"
-            :title="`Mostrar/Ocultar: ${model.label}`"
-          >
-            <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: activeModels[model.key] ? model.color : '#94a3b8' }"></span>
-            
-            <span class="absolute right-10 bg-slate-900 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-md">
-              {{ model.label }}
-            </span>
-          </button>
-        </div>
-
-        <!-- Bottom tools -->
-        <div class="flex flex-col items-center gap-3">
-          <button 
-            @click="reset3D"
-            class="w-8 h-8 hover:bg-slate-200 text-slate-600 rounded flex items-center justify-center transition-all border border-slate-300 bg-white shadow-sm cursor-pointer"
-            title="Centrar Visualizador 3D"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          </button>
-        </div>
-      </aside>
-
     </div>
 
     <!-- 6. Mobile Bottom Navigation Bar (Fitted to bottom, hidden on desktop) -->
@@ -467,7 +427,7 @@ const FRECUENCIAS_TERCIO = [
 ];
 
 const presets = ref([...materialPresets]);
-const activeMaterial = ref({ ...presets.value[6] });
+const activeMaterial = ref({ ...presets.value.find(p => p.id === 'vidrio') || presets.value[12] });
 
 // UI conmutable tab states
 const activeAnalysisTab = ref('chart');
