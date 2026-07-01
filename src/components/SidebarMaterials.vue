@@ -60,6 +60,36 @@
             {{ mat.nombre }} ({{ mat.densidad }} kg/m³)
           </option>
         </select>
+        
+        <!-- Actions for Presets -->
+        <div class="flex gap-2 mt-1 shrink-0">
+          <button 
+            type="button"
+            @click="createNewCustomMaterial"
+            class="flex-grow py-1.5 px-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded font-bold text-[10px] text-center cursor-pointer transition-all active:scale-[0.98] shadow-sm select-none"
+          >
+            Nuevo Material
+          </button>
+          <button 
+            type="button"
+            @click="saveCurrentAsPreset"
+            class="flex-grow py-1.5 px-2 bg-[#0b5b8c] hover:bg-[#07476e] text-white rounded font-bold text-[10px] text-center cursor-pointer transition-all active:scale-[0.98] shadow-sm select-none"
+          >
+            Guardar en Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- Nombre del Material -->
+      <div class="flex flex-col gap-1.5 shrink-0">
+        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Nombre del Material</label>
+        <input 
+          type="text" 
+          :value="modelValue.nombre" 
+          @input="updateProp('nombre', $event.target.value)"
+          placeholder="Nombre del material..."
+          class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
+        />
       </div>
 
       <!-- Mechanical Properties -->
@@ -277,7 +307,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'addPresets']);
+const emit = defineEmits(['update:modelValue', 'addPresets', 'savePreset']);
 
 const onPresetChange = (presetId) => {
   if (presetId === 'custom') {
@@ -299,11 +329,38 @@ const onPresetChange = (presetId) => {
 const updateProp = (key, value) => {
   emit('update:modelValue', {
     ...props.modelValue,
-    id: 'custom',
-    nombre: 'Personalizado',
-    descripcion: 'Propiedades físicas ajustadas manualmente.',
+    // Keep custom prefix if already custom, otherwise flag it as custom
+    id: props.modelValue.id === 'custom' || props.modelValue.id.startsWith('custom_') ? props.modelValue.id : 'custom',
     [key]: value
   });
+};
+
+const saveCurrentAsPreset = () => {
+  const defaultName = props.modelValue.nombre === 'Personalizado' ? 'Nuevo Material' : props.modelValue.nombre;
+  const name = prompt("Nombre del material para guardar en la base de datos:", defaultName);
+  if (!name) return;
+  
+  const savedMaterial = {
+    ...props.modelValue,
+    id: `custom_${Date.now()}`,
+    nombre: name
+  };
+  emit('savePreset', savedMaterial);
+};
+
+const createNewCustomMaterial = () => {
+  const newMat = {
+    id: `custom_${Date.now()}`,
+    nombre: 'Nuevo Material',
+    densidad: 1000,
+    young: 1e9,
+    amortiguamiento: 0.01,
+    espesor: 0.01,
+    poisson: 0.3,
+    color: '#64748b',
+    descripcion: 'Material creado manualmente.'
+  };
+  emit('update:modelValue', newMat);
 };
 
 const onFileImport = (event) => {
