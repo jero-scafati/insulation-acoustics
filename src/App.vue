@@ -185,12 +185,43 @@
           </div>
         </div>
 
-        <!-- Dashboard Workspace Container: Chart and Table side-by-side on desktop, tabbed on mobile -->
-        <div class="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 p-3 gap-3">
-          <!-- Left Panel: Acoustic Chart -->
+        <!-- Tab Bar for Central Viewport -->
+        <div class="flex border-b border-slate-300 bg-slate-200/50 shrink-0">
+          <button 
+            @click="activeCentralTab = 'chart'"
+            class="px-5 py-2 border-r border-slate-300 font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer select-none"
+            :class="activeCentralTab === 'chart' 
+              ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
+              : 'text-slate-500 hover:text-slate-800 bg-slate-200/30'"
+          >
+            Gráfico Acústico
+          </button>
+          <button 
+            @click="activeCentralTab = 'table'"
+            class="px-5 py-2 border-r border-slate-300 font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer select-none"
+            :class="activeCentralTab === 'table' 
+              ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
+              : 'text-slate-500 hover:text-slate-800 bg-slate-200/30'"
+          >
+            Tabla de Valores
+          </button>
+          <button 
+            @click="activeCentralTab = 'canvas3d'"
+            class="px-5 py-2 border-r border-slate-300 font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer select-none"
+            :class="activeCentralTab === 'canvas3d' 
+              ? 'bg-white text-[#0b5b8c] border-b border-b-transparent -mb-[1px]' 
+              : 'text-slate-500 hover:text-slate-800 bg-slate-200/30'"
+          >
+            Vista 3D Interactiva
+          </button>
+        </div>
+
+        <!-- Central Viewport Display -->
+        <div class="flex-grow min-h-0 relative p-3 bg-[#edf1f5]">
+          <!-- Acoustic Chart Tab -->
           <div 
-            class="flex-grow min-h-0 relative h-full flex flex-col gap-2"
-            :class="mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'"
+            v-show="activeCentralTab === 'chart'"
+            class="w-full h-full flex flex-col gap-2"
           >
             <!-- Mobile-only Model Toggles inside the chart container -->
             <div class="lg:hidden flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-300 rounded-lg shrink-0">
@@ -216,10 +247,10 @@
             />
           </div>
 
-          <!-- Right Panel: Results Table -->
+          <!-- Results Table Tab -->
           <div 
-            class="w-full lg:w-[380px] min-h-0 relative h-full shrink-0 flex flex-col"
-            :class="mobileTab === 'results' ? 'flex' : 'hidden lg:flex'"
+            v-show="activeCentralTab === 'table'"
+            class="w-full h-full"
           >
             <ResultsTable 
               class="w-full h-full"
@@ -227,6 +258,21 @@
               :predictions="predictions"
               :fc="fc"
               :activeModels="activeModels"
+            />
+          </div>
+
+          <!-- 3D Canvas Tab -->
+          <div 
+            v-show="activeCentralTab === 'canvas3d'"
+            class="w-full h-full relative"
+          >
+            <Canvas3D 
+              ref="canvas3dRef"
+              :espesor="activeMaterial.espesor"
+              :color="activeMaterial.color"
+              :materialNombre="activeMaterial.nombre"
+              :rwValue="primaryRwInfo.val"
+              class="w-full h-full animate-fade-in"
             />
           </div>
         </div>
@@ -243,18 +289,7 @@
             v-model="activeMaterial"
             :presets="presets"
             @addPresets="addNewPresets"
-          />
-        </div>
-
-        <!-- Visualizer 3D Panel (Acts as a small bottom preview card on desktop/config) -->
-        <div class="h-[240px] border-t border-slate-300 bg-white p-3 shrink-0 relative flex flex-col">
-          <Canvas3D 
-            ref="canvas3dRef"
-            :espesor="activeMaterial.espesor"
-            :color="activeMaterial.color"
-            :materialNombre="activeMaterial.nombre"
-            :rwValue="primaryRwInfo.val"
-            class="w-full h-full animate-fade-in"
+            @savePreset="onSavePreset"
           />
         </div>
       </aside>
@@ -304,9 +339,9 @@
     <nav class="h-12 bg-white border-t border-slate-300 flex items-center justify-around shrink-0 lg:hidden z-30">
       <!-- Button 1: Gráfico -->
       <button 
-        @click="mobileTab = 'canvas'"
-        class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
-        :class="mobileTab === 'canvas' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
+        @click="mobileTab = 'canvas'; activeCentralTab = 'chart'"
+        class="flex flex-col items-center gap-0.5 py-1 px-3 text-[9px] font-bold uppercase tracking-wider transition-all"
+        :class="(mobileTab === 'canvas' && activeCentralTab === 'chart') ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
       >
         <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -314,28 +349,41 @@
         <span>Gráfico</span>
       </button>
 
-      <!-- Button 2: Config / Material Presets -->
+      <!-- Button 2: Tabla -->
+      <button 
+        @click="mobileTab = 'canvas'; activeCentralTab = 'table'"
+        class="flex flex-col items-center gap-0.5 py-1 px-3 text-[9px] font-bold uppercase tracking-wider transition-all"
+        :class="(mobileTab === 'canvas' && activeCentralTab === 'table') ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
+      >
+        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-3-8v8m6-8v8M3 6h18a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2z" />
+        </svg>
+        <span>Tabla</span>
+      </button>
+
+      <!-- Button 3: Vista 3D -->
+      <button 
+        @click="mobileTab = 'canvas'; activeCentralTab = 'canvas3d'"
+        class="flex flex-col items-center gap-0.5 py-1 px-3 text-[9px] font-bold uppercase tracking-wider transition-all"
+        :class="(mobileTab === 'canvas' && activeCentralTab === 'canvas3d') ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
+      >
+        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span>3D</span>
+      </button>
+
+      <!-- Button 4: Ajustes -->
       <button 
         @click="mobileTab = 'config'"
-        class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
+        class="flex flex-col items-center gap-0.5 py-1 px-3 text-[9px] font-bold uppercase tracking-wider transition-all"
         :class="mobileTab === 'config' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
       >
         <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
         </svg>
         <span>Ajustes</span>
-      </button>
-
-      <!-- Button 3: Tabla -->
-      <button 
-        @click="mobileTab = 'results'"
-        class="flex flex-col items-center gap-0.5 py-1 px-4 text-[9px] font-bold uppercase tracking-wider transition-all"
-        :class="mobileTab === 'results' ? 'text-[#0b5b8c]' : 'text-slate-400 hover:text-slate-600'"
-      >
-        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-3-8v8m6-8v8M3 6h18a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2z" />
-        </svg>
-        <span>Tabla</span>
       </button>
     </nav>
 
@@ -422,6 +470,7 @@ const activeMaterial = ref({ ...presets.value[6] });
 
 // UI conmutable tab states
 const activeAnalysisTab = ref('chart');
+const activeCentralTab = ref('chart'); // 'chart', 'table', 'canvas3d'
 const primaryModel = ref('davy');
 const showInfoModal = ref(false);
 const mobileTab = ref('canvas'); // 'canvas', 'config', 'results' for 100% mobile optimization
@@ -480,6 +529,16 @@ const addNewPresets = (newPresets) => {
       presets.value.push(preset);
     }
   });
+};
+
+const onSavePreset = (newPreset) => {
+  const idx = presets.value.findIndex(p => p.id === newPreset.id || p.nombre.toLowerCase() === newPreset.nombre.toLowerCase());
+  if (idx !== -1) {
+    presets.value[idx] = newPreset;
+  } else {
+    presets.value.push(newPreset);
+  }
+  activeMaterial.value = newPreset;
 };
 
 const fc = computed(() => {
