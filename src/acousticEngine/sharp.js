@@ -1,9 +1,7 @@
 import { calcularFrecuenciaCritica } from './iso12354.js';
 
 /**
- * Acoustic engine: Sharp's Model (1978)
- * Sharp's model uses a piecewise approach to calculate transmission loss,
- * accounting for mass-controlled region, coincidence, and damping-controlled region.
+ * Calculates sound transmission loss using Sharp's model (1978) matching the TP requirements.
  * 
  * @param {Object} material
  * @param {number} material.densidad - Density (kg/m³)
@@ -18,32 +16,58 @@ export function calcularSharp(material, frecuencias) {
   const m = material.densidad * material.espesor;
   if (m <= 0) return frecuencias.map(() => 0);
   
-  const nu = material.poisson || 0.3;
+  const nu = material.poisson !== undefined ? material.poisson : 0.3;
   const fc = calcularFrecuenciaCritica(material.young, material.densidad, material.espesor, nu);
-  const eta = material.amortiguamiento || 0.01;
+  const etaInt = material.amortiguamiento || 0.01;
   
+  const rho0 = 1.18; // standard density of air
+  const c0 = 343;    // speed of sound in air
+
+  // Helper function to calculate R below 0.5 fc
+  const calcR_below = (f) => {
+    return 10 * Math.log10(1 + Math.pow((Math.PI * m * f) / (rho0 * c0), 2)) - 5.5;
+  };
+
+  // Helper function to calculate R above fc
+  const calcR_above = (f) => {
+    const etaTotal = etaInt + m / (485 * Math.sqrt(f));
+    const ratio_f = f / fc;
+    let sigma = 2.5;
+    if (ratio_f > 1.0) {
+      const diff = 1.0 - (1.0 / ratio_f);
+      if (diff > 0) {
+        sigma = 1.0 / Math.sqrt(diff);
+      }
+    }
+    sigma = isNaN(sigma) ? 2.5 : Math.min(2.5, sigma); // Cap to prevent division by zero / infinity near fc
+    
+    const R1 = 10 * Math.log10(1 + Math.pow((Math.PI * m * f) / (rho0 * c0), 2)) +
+               10 * Math.log10((2 * etaTotal * sigma) / Math.PI);
+               
+    const R2 = 10 * Math.log10(1 + Math.pow((Math.PI * m * f) / (rho0 * c0), 2)) - 5.5;
+    
+    return Math.min(R1, R2);
+  };
+
+  // Calculate critical values at the boundaries of the interpolation range
+  const f_low = 0.5 * fc;
+  const R_A = calcR_below(f_low);
+  const R_B = calcR_above(fc);
+
   return frecuencias.map(f => {
-    // 1. Below critical frequency (mass-controlled)
-    if (f < fc / 2) {
-      const R = 20 * Math.log10(m * f) - 48;
+    if (f < f_low) {
+      // 1. Below 0.5 fc
+      const R = calcR_below(f);
+      return Math.max(0, parseFloat(R.toFixed(1)));
+    } else if (f >= fc) {
+      // 2. Above fc
+      const R = calcR_above(f);
+      return Math.max(0, parseFloat(R.toFixed(1)));
+    } else {
+      // 3. Between 0.5 fc and fc (linear interpolation)
+      const ratio = (f - f_low) / (fc - f_low);
+      const R = R_A + ratio * (R_B - R_A);
       return Math.max(0, parseFloat(R.toFixed(1)));
     }
-    
-    // 2. Value at critical frequency (coincidence dip)
-    // Sharp's model dip is controlled heavily by the damping factor (loss factor)
-    const R_fc = 20 * Math.log10(m * fc) - 48 + 10 * Math.log10(eta) - 4;
-    
-    // 3. Above critical frequency (damping and radiation-controlled)
-    if (f > fc) {
-      // Sound reduction index recovers above fc, increasing at 9dB per octave (10 log10(f/fc))
-      const R = 20 * Math.log10(m * f) - 48 + 10 * Math.log10(eta) + 10 * Math.log10(f / fc) + 2;
-      return Math.max(0, parseFloat(R.toFixed(1)));
-    }
-    
-    // 4. In transition region (fc/2 to fc)
-    const R_fc2 = 20 * Math.log10(m * (fc / 2)) - 48;
-    const ratio = (f - fc / 2) / (fc - fc / 2);
-    const R = R_fc2 + ratio * (R_fc - R_fc2);
-    return Math.max(0, parseFloat(R.toFixed(1)));
   });
 }
