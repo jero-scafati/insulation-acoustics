@@ -658,22 +658,23 @@ const exportToExcel = () => {
   const wsProps = utils.json_to_sheet(materialData);
   
   const rwData = [];
-  if (activeModels.value.massLawTheoretical) rwData.push({ "Modelo Acústico": "Ley de Masas Teórica", "Rw (dB)": rwVals.value.massLawTheoretical });
-  if (activeModels.value.massLawCorrected) rwData.push({ "Modelo Acústico": "Ley de Masas Corregida", "Rw (dB)": rwVals.value.massLawCorrected });
-  if (activeModels.value.iso12354) rwData.push({ "Modelo Acústico": "Norma ISO 12354-1", "Rw (dB)": rwVals.value.iso12354 });
-  if (activeModels.value.cremer) rwData.push({ "Modelo Acústico": "Modelo Cremer (Teor.)", "Rw (dB)": rwVals.value.cremer });
-  if (activeModels.value.sharp) rwData.push({ "Modelo Acústico": "Modelo Sharp (1978)", "Rw (dB)": rwVals.value.sharp });
-  if (activeModels.value.davy) rwData.push({ "Modelo Acústico": "Modelo Davy (2009)", "Rw (dB)": rwVals.value.davy });
+  modelOptions.forEach(opt => {
+    if (activeModels.value[opt.key]) {
+      rwData.push({
+        "Modelo Acústico": opt.label,
+        "Rw (dB)": rwVals.value[opt.key]
+      });
+    }
+  });
   const wsRw = utils.json_to_sheet(rwData);
   
   const curveData = FRECUENCIAS_TERCIO.map((f, idx) => {
     const row = { "Frecuencia (Hz)": f };
-    if (activeModels.value.massLawTheoretical) row["Ley de Masas Teórica (dB)"] = predictions.value.massLawTheoretical[idx];
-    if (activeModels.value.massLawCorrected) row["Ley de Masas Corregida (dB)"] = predictions.value.massLawCorrected[idx];
-    if (activeModels.value.iso12354) row["ISO 12354-1 (dB)"] = predictions.value.iso12354[idx];
-    if (activeModels.value.cremer) row["Modelo Cremer (dB)"] = predictions.value.cremer[idx];
-    if (activeModels.value.sharp) row["Modelo Sharp (dB)"] = predictions.value.sharp[idx];
-    if (activeModels.value.davy) row["Modelo Davy (dB)"] = predictions.value.davy[idx];
+    modelOptions.forEach(opt => {
+      if (activeModels.value[opt.key]) {
+        row[`${opt.label} (dB)`] = predictions.value[opt.key][idx];
+      }
+    });
     return row;
   });
   const wsCurve = utils.json_to_sheet(curveData);
@@ -682,8 +683,8 @@ const exportToExcel = () => {
   wsRw['!cols'] = [{ wch: 30 }, { wch: 10 }];
   
   const curveCols = [{ wch: 15 }];
-  Object.keys(activeModels.value).forEach(k => {
-    if (activeModels.value[k]) curveCols.push({ wch: 22 });
+  modelOptions.forEach(opt => {
+    if (activeModels.value[opt.key]) curveCols.push({ wch: 24 });
   });
   wsCurve['!cols'] = curveCols;
 
