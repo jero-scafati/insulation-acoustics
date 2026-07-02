@@ -130,6 +130,19 @@ const getChartDatasets = () => {
     });
   }
 
+  if (props.activeModels.simpleWallZonal) {
+    datasets.push({
+      label: 'Pared Simple (Zonas)',
+      data: props.predictions.simpleWallZonal || [],
+      borderColor: '#f97316', // orange
+      backgroundColor: 'rgba(249, 115, 22, 0.05)',
+      borderWidth: 2,
+      tension: 0.15,
+      pointRadius: 2,
+      pointHoverRadius: 5
+    });
+  }
+
   return datasets;
 };
 

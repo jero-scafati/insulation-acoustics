@@ -413,6 +413,7 @@ import { calcularISO12354, calcularFrecuenciaCritica, calcularRigidezFlexion, ca
 import { calcularCremer } from './acousticEngine/cremer.js';
 import { calcularSharp } from './acousticEngine/sharp.js';
 import { calcularDavy } from './acousticEngine/davy.js';
+import { calcularParedSimpleZonal } from './acousticEngine/simpleWallZonal.js';
 import { calcularRw } from './acousticEngine/weightedIndex.js';
 
 // Components
@@ -452,7 +453,8 @@ const activeModels = ref({
   iso12354: true,
   cremer: true,
   sharp: true,
-  davy: true
+  davy: true,
+  simpleWallZonal: true
 });
 
 const modelOptions = [
@@ -461,7 +463,8 @@ const modelOptions = [
   { key: 'iso12354', label: 'Norma ISO 12354', color: '#10b981' },
   { key: 'cremer', label: 'Modelo Cremer (Teor.)', color: '#a855f7' },
   { key: 'sharp', label: 'Modelo Sharp (1978)', color: '#ec4899' },
-  { key: 'davy', label: 'Modelo Davy (2009)', color: '#eab308' }
+  { key: 'davy', label: 'Modelo Davy (2009)', color: '#eab308' },
+  { key: 'simpleWallZonal', label: 'Pared Simple (Zonas)', color: '#f97316' }
 ];
 
 const toggleModel = (key) => {
@@ -545,7 +548,8 @@ const predictions = computed(() => {
     iso12354: calcularISO12354(material, FRECUENCIAS_TERCIO),
     cremer: calcularCremer(material, FRECUENCIAS_TERCIO),
     sharp: calcularSharp(material, FRECUENCIAS_TERCIO),
-    davy: calcularDavy(material, FRECUENCIAS_TERCIO, lx, ly)
+    davy: calcularDavy(material, FRECUENCIAS_TERCIO, lx, ly),
+    simpleWallZonal: calcularParedSimpleZonal(material, FRECUENCIAS_TERCIO, lx, ly)
   };
 });
 
@@ -557,7 +561,8 @@ const rwVals = computed(() => {
     iso12354: calcularRw(FRECUENCIAS_TERCIO, preds.iso12354),
     cremer: calcularRw(FRECUENCIAS_TERCIO, preds.cremer),
     sharp: calcularRw(FRECUENCIAS_TERCIO, preds.sharp),
-    davy: calcularRw(FRECUENCIAS_TERCIO, preds.davy)
+    davy: calcularRw(FRECUENCIAS_TERCIO, preds.davy),
+    simpleWallZonal: calcularRw(FRECUENCIAS_TERCIO, preds.simpleWallZonal)
   };
 });
 

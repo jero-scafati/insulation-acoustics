@@ -40,6 +40,10 @@
               <span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style="background-color: #eab308;"></span>
               <span class="align-middle">Davy</span>
             </th>
+            <th v-if="activeModels.simpleWallZonal" class="px-2 py-2 font-bold truncate">
+              <span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style="background-color: #f97316;"></span>
+              <span class="align-middle">Zonal</span>
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-[10px] font-medium text-slate-700 font-mono">
@@ -68,6 +72,9 @@
             </td>
             <td v-if="activeModels.davy" class="px-2 py-1" :class="{'text-amber-700 font-bold bg-amber-50/30': isCoincidence(f)}">
               {{ predictions.davy[idx] }}
+            </td>
+            <td v-if="activeModels.simpleWallZonal" class="px-2 py-1" :class="{'text-orange-700 font-bold bg-orange-50/30': isCoincidence(f)}">
+              {{ predictions.simpleWallZonal[idx] }}
             </td>
           </tr>
         </tbody>
