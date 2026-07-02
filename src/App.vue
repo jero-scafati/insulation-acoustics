@@ -269,6 +269,8 @@
             <Canvas3D 
               ref="canvas3dRef"
               :espesor="activeMaterial.espesor"
+              :lx="activeMaterial.lx !== undefined ? activeMaterial.lx : 1.5"
+              :ly="activeMaterial.ly !== undefined ? activeMaterial.ly : 1.2"
               :color="activeMaterial.color"
               :materialNombre="activeMaterial.nombre"
               :rwValue="primaryRwInfo.val"
@@ -427,7 +429,11 @@ const FRECUENCIAS_TERCIO = [
 ];
 
 const presets = ref([...materialPresets]);
-const activeMaterial = ref({ ...presets.value.find(p => p.id === 'vidrio') || presets.value[12] });
+const activeMaterial = ref({ 
+  ...presets.value.find(p => p.id === 'vidrio') || presets.value[12],
+  lx: 1.5,
+  ly: 1.2
+});
 
 // UI conmutable tab states
 const activeAnalysisTab = ref('chart');
@@ -519,7 +525,9 @@ const stiffnessB = computed(() => {
 
 const f11Val = computed(() => {
   const m = activeMaterial.value.densidad * activeMaterial.value.espesor;
-  return calcularF11(stiffnessB.value, m, 1.0, 1.5);
+  const lx = activeMaterial.value.lx !== undefined ? activeMaterial.value.lx : 1.5;
+  const ly = activeMaterial.value.ly !== undefined ? activeMaterial.value.ly : 1.2;
+  return calcularF11(stiffnessB.value, m, lx, ly);
 });
 
 const fdVal = computed(() => {
@@ -529,13 +537,15 @@ const fdVal = computed(() => {
 
 const predictions = computed(() => {
   const material = activeMaterial.value;
+  const lx = material.lx !== undefined ? material.lx : 1.5;
+  const ly = material.ly !== undefined ? material.ly : 1.2;
   return {
     massLawTheoretical: calcularLeyMasasTeorica(material, FRECUENCIAS_TERCIO),
     massLawCorrected: calcularLeyMasasCorregida(material, FRECUENCIAS_TERCIO),
     iso12354: calcularISO12354(material, FRECUENCIAS_TERCIO),
     cremer: calcularCremer(material, FRECUENCIAS_TERCIO),
     sharp: calcularSharp(material, FRECUENCIAS_TERCIO),
-    davy: calcularDavy(material, FRECUENCIAS_TERCIO)
+    davy: calcularDavy(material, FRECUENCIAS_TERCIO, lx, ly)
   };
 });
 

@@ -94,11 +94,10 @@
 
       <!-- Mechanical Properties -->
       <div class="flex flex-col gap-4 shrink-0">
-        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-1">Propiedades Físicas</span>
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-1">Propiedades Físicas Principales</span>
         
         <!-- Espesor (mm) -->
         <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
-          <!-- Row 1 on mobile: Label & Input | ColSpan 5 on desktop -->
           <div class="flex items-center justify-between md:col-span-5">
             <span class="text-slate-600 font-bold md:font-medium">Espesor (mm)</span>
             <input 
@@ -110,7 +109,6 @@
               class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
             />
           </div>
-          <!-- Slider: full width on mobile | ColSpan 4 on desktop -->
           <div class="col-span-4 flex items-center">
             <input 
               type="range" 
@@ -122,7 +120,6 @@
               class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
             />
           </div>
-          <!-- Numeric input: hidden on mobile | ColSpan 3 on desktop -->
           <div class="hidden md:block md:col-span-3">
             <input 
               type="number" 
@@ -135,137 +132,231 @@
           </div>
         </div>
 
-        <!-- Densidad (kg/m3) -->
+        <!-- Ancho (m) -->
         <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
           <div class="flex items-center justify-between md:col-span-5">
-            <span class="text-slate-600 font-bold md:font-medium">Densidad (kg/m³)</span>
+            <span class="text-slate-600 font-bold md:font-medium">Ancho (m)</span>
             <input 
               type="number" 
-              :value="modelValue.densidad" 
-              @input="updateProp('densidad', Number($event.target.value))"
-              class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-          <div class="col-span-4 flex items-center">
-            <input 
-              type="range" 
-              :value="modelValue.densidad"
-              @input="updateProp('densidad', Number($event.target.value))"
-              min="100"
-              max="8000"
-              step="50"
-              class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
-            />
-          </div>
-          <div class="hidden md:block md:col-span-3">
-            <input 
-              type="number" 
-              :value="modelValue.densidad" 
-              @input="updateProp('densidad', Number($event.target.value))"
-              class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <!-- Young (GPa) -->
-        <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
-          <div class="flex items-center justify-between md:col-span-5">
-            <span class="text-slate-600 font-bold md:font-medium">Módulo Young (GPa)</span>
-            <input 
-              type="number" 
-              :value="parseFloat((modelValue.young / 1e9).toFixed(3))" 
-              @input="updateProp('young', Number($event.target.value) * 1e9)"
-              step="0.001"
-              class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-          <div class="col-span-4 flex items-center">
-            <input 
-              type="range" 
-              :value="modelValue.young / 1e9"
-              @input="updateProp('young', Number($event.target.value) * 1e9)"
+              :value="modelValue.lx !== undefined ? modelValue.lx : 1.5" 
+              @input="updateProp('lx', Number($event.target.value))"
+              step="0.1"
               min="0.1"
-              max="200"
-              step="0.5"
-              class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
-            />
-          </div>
-          <div class="hidden md:block md:col-span-3">
-            <input 
-              type="number" 
-              :value="parseFloat((modelValue.young / 1e9).toFixed(3))" 
-              @input="updateProp('young', Number($event.target.value) * 1e9)"
-              step="0.001"
-              class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <!-- Amortiguamiento (eta) -->
-        <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
-          <div class="flex items-center justify-between md:col-span-5">
-            <span class="text-slate-600 font-bold md:font-medium">Amortiguamiento (&eta;)</span>
-            <input 
-              type="number" 
-              :value="modelValue.amortiguamiento" 
-              @input="updateProp('amortiguamiento', Number($event.target.value))"
-              step="0.0001"
               class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
             />
           </div>
           <div class="col-span-4 flex items-center">
             <input 
               type="range" 
-              :value="modelValue.amortiguamiento"
-              @input="updateProp('amortiguamiento', Number($event.target.value))"
-              min="0.0001"
-              max="0.1"
-              step="0.001"
+              :value="modelValue.lx !== undefined ? modelValue.lx : 1.5"
+              @input="updateProp('lx', Number($event.target.value))"
+              min="0.2"
+              max="15.0"
+              step="0.1"
               class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
             />
           </div>
           <div class="hidden md:block md:col-span-3">
             <input 
               type="number" 
-              :value="modelValue.amortiguamiento" 
-              @input="updateProp('amortiguamiento', Number($event.target.value))"
-              step="0.0001"
+              :value="modelValue.lx !== undefined ? modelValue.lx : 1.5" 
+              @input="updateProp('lx', Number($event.target.value))"
+              step="0.1"
+              min="0.1"
               class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        <!-- Poisson (nu) -->
+        <!-- Alto (m) -->
         <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
           <div class="flex items-center justify-between md:col-span-5">
-            <span class="text-slate-600 font-bold md:font-medium">Módulo Poisson (&nu;)</span>
+            <span class="text-slate-600 font-bold md:font-medium">Alto (m)</span>
             <input 
               type="number" 
-              :value="modelValue.poisson" 
-              @input="updateProp('poisson', Number($event.target.value))"
-              step="0.01"
+              :value="modelValue.ly !== undefined ? modelValue.ly : 1.2" 
+              @input="updateProp('ly', Number($event.target.value))"
+              step="0.1"
+              min="0.1"
               class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
             />
           </div>
           <div class="col-span-4 flex items-center">
             <input 
               type="range" 
-              :value="modelValue.poisson"
-              @input="updateProp('poisson', Number($event.target.value))"
-              min="0.0"
-              max="0.49"
-              step="0.01"
+              :value="modelValue.ly !== undefined ? modelValue.ly : 1.2"
+              @input="updateProp('ly', Number($event.target.value))"
+              min="0.2"
+              max="15.0"
+              step="0.1"
               class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
             />
           </div>
           <div class="hidden md:block md:col-span-3">
             <input 
               type="number" 
-              :value="modelValue.poisson" 
-              @input="updateProp('poisson', Number($event.target.value))"
-              step="0.01"
+              :value="modelValue.ly !== undefined ? modelValue.ly : 1.2" 
+              @input="updateProp('ly', Number($event.target.value))"
+              step="0.1"
+              min="0.1"
               class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
             />
+          </div>
+        </div>
+
+        <!-- Toggle Modo Avanzado -->
+        <div class="mt-2 shrink-0">
+          <button 
+            type="button"
+            @click="showAdvanced = !showAdvanced"
+            class="w-full flex items-center justify-between py-2 px-3 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 rounded text-[10px] font-bold text-slate-700 cursor-pointer select-none transition-all active:scale-[0.99] shadow-sm"
+          >
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              {{ showAdvanced ? 'Ocultar Parámetros Avanzados' : 'Modo Avanzado (Densidad, Young, etc.)' }}
+            </span>
+            <svg class="w-3 h-3 transform transition-transform duration-200" :class="{ 'rotate-180': showAdvanced }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Advanced Mechanical Properties Section -->
+        <div v-show="showAdvanced" class="flex flex-col gap-4 border-t border-slate-200 pt-3 mt-1 animate-fade-in">
+          <!-- Densidad (kg/m3) -->
+          <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
+            <div class="flex items-center justify-between md:col-span-5">
+              <span class="text-slate-600 font-bold md:font-medium">Densidad (kg/m³)</span>
+              <input 
+                type="number" 
+                :value="modelValue.densidad" 
+                @input="updateProp('densidad', Number($event.target.value))"
+                class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div class="col-span-4 flex items-center">
+              <input 
+                type="range" 
+                :value="modelValue.densidad"
+                @input="updateProp('densidad', Number($event.target.value))"
+                min="100"
+                max="8000"
+                step="50"
+                class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
+              />
+            </div>
+            <div class="hidden md:block md:col-span-3">
+              <input 
+                type="number" 
+                :value="modelValue.densidad" 
+                @input="updateProp('densidad', Number($event.target.value))"
+                class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <!-- Young (GPa) -->
+          <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
+            <div class="flex items-center justify-between md:col-span-5">
+              <span class="text-slate-600 font-bold md:font-medium">Módulo Young (GPa)</span>
+              <input 
+                type="number" 
+                :value="parseFloat((modelValue.young / 1e9).toFixed(3))" 
+                @input="updateProp('young', Number($event.target.value) * 1e9)"
+                step="0.001"
+                class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div class="col-span-4 flex items-center">
+              <input 
+                type="range" 
+                :value="modelValue.young / 1e9"
+                @input="updateProp('young', Number($event.target.value) * 1e9)"
+                min="0.1"
+                max="200"
+                step="0.5"
+                class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
+              />
+            </div>
+            <div class="hidden md:block md:col-span-3">
+              <input 
+                type="number" 
+                :value="parseFloat((modelValue.young / 1e9).toFixed(3))" 
+                @input="updateProp('young', Number($event.target.value) * 1e9)"
+                step="0.001"
+                class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <!-- Amortiguamiento (eta) -->
+          <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
+            <div class="flex items-center justify-between md:col-span-5">
+              <span class="text-slate-600 font-bold md:font-medium">Amortiguamiento (&eta;)</span>
+              <input 
+                type="number" 
+                :value="modelValue.amortiguamiento" 
+                @input="updateProp('amortiguamiento', Number($event.target.value))"
+                step="0.0001"
+                class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div class="col-span-4 flex items-center">
+              <input 
+                type="range" 
+                :value="modelValue.amortiguamiento"
+                @input="updateProp('amortiguamiento', Number($event.target.value))"
+                min="0.0001"
+                max="0.1"
+                step="0.001"
+                class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
+              />
+            </div>
+            <div class="hidden md:block md:col-span-3">
+              <input 
+                type="number" 
+                :value="modelValue.amortiguamiento" 
+                @input="updateProp('amortiguamiento', Number($event.target.value))"
+                step="0.0001"
+                class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <!-- Poisson (nu) -->
+          <div class="flex flex-col gap-1.5 md:grid md:grid-cols-12 md:items-center md:gap-2">
+            <div class="flex items-center justify-between md:col-span-5">
+              <span class="text-slate-600 font-bold md:font-medium">Módulo Poisson (&nu;)</span>
+              <input 
+                type="number" 
+                :value="modelValue.poisson" 
+                @input="updateProp('poisson', Number($event.target.value))"
+                step="0.01"
+                class="w-16 text-right md:hidden bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 font-bold focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div class="col-span-4 flex items-center">
+              <input 
+                type="range" 
+                :value="modelValue.poisson"
+                @input="updateProp('poisson', Number($event.target.value))"
+                min="0.0"
+                max="0.49"
+                step="0.01"
+                class="w-full accent-[#0b5b8c] h-1 bg-slate-200 rounded cursor-pointer"
+              />
+            </div>
+            <div class="hidden md:block md:col-span-3">
+              <input 
+                type="number" 
+                :value="modelValue.poisson" 
+                @input="updateProp('poisson', Number($event.target.value))"
+                step="0.01"
+                class="w-full text-right bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-800 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -294,6 +385,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { read, utils } from 'xlsx';
 
 const props = defineProps({
@@ -309,6 +401,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'addPresets', 'savePreset']);
 
+const showAdvanced = ref(false);
+
 const onPresetChange = (presetId) => {
   if (presetId === 'custom') {
     emit('update:modelValue', {
@@ -322,7 +416,11 @@ const onPresetChange = (presetId) => {
   
   const selected = props.presets.find(p => p.id === presetId);
   if (selected) {
-    emit('update:modelValue', { ...selected });
+    emit('update:modelValue', { 
+      ...selected,
+      lx: props.modelValue.lx !== undefined ? props.modelValue.lx : 1.5,
+      ly: props.modelValue.ly !== undefined ? props.modelValue.ly : 1.2
+    });
   }
 };
 
@@ -357,6 +455,8 @@ const createNewCustomMaterial = () => {
     amortiguamiento: 0.01,
     espesor: 0.01,
     poisson: 0.3,
+    lx: 1.5,
+    ly: 1.2,
     color: '#64748b',
     descripcion: 'Material creado manualmente.'
   };

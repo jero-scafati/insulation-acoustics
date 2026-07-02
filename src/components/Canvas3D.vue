@@ -43,6 +43,14 @@ const props = defineProps({
     type: Number,
     required: true
   },
+  lx: {
+    type: Number,
+    default: 1.5
+  },
+  ly: {
+    type: Number,
+    default: 1.2
+  },
   color: {
     type: String,
     default: '#64748b'
@@ -205,8 +213,8 @@ const init3D = () => {
   wireframeMesh = new THREE.LineSegments(wireframeGeom, wireframeMat);
   wallMesh.add(wireframeMesh);
 
-  // Create dimension lines
-  drawDimensionLines(props.espesor);
+  // Create dimension lines & apply scale
+  updateWallDimensions();
 
   // 7. Animation Loop
   const animate = () => {
@@ -219,20 +227,22 @@ const init3D = () => {
   animate();
 };
 
-const drawDimensionLines = (thickness) => {
+const drawDimensionLines = (thickness, scaleX = 1.0) => {
   if (dimensionLine) scene.remove(dimensionLine);
   if (tick1) scene.remove(tick1);
   if (tick2) scene.remove(tick2);
 
   const visualScale = Math.min(1.8, Math.max(0.04, thickness * 4));
   const zHalf = visualScale / 2;
-
   const lineMaterial = new THREE.LineBasicMaterial({ color: 0x475569, linewidth: 1.5 });
+
+  // Floating dimension line offset relative to wall outer width boundary (wall local base is 1.2 wide, so half is 0.6)
+  const xOffset = (0.6 * scaleX) + 0.15;
 
   // Main dimension line offset
   const points = [
-    new THREE.Vector3(0.8, -0.75, -zHalf),
-    new THREE.Vector3(0.8, -0.75, zHalf)
+    new THREE.Vector3(xOffset, -0.75, -zHalf),
+    new THREE.Vector3(xOffset, -0.75, zHalf)
   ];
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
   dimensionLine = new THREE.Line(geometry, lineMaterial);
@@ -240,8 +250,8 @@ const drawDimensionLines = (thickness) => {
 
   // Tick 1
   const t1Points = [
-    new THREE.Vector3(0.7, -0.75, -zHalf),
-    new THREE.Vector3(0.9, -0.75, -zHalf)
+    new THREE.Vector3(xOffset - 0.08, -0.75, -zHalf),
+    new THREE.Vector3(xOffset + 0.08, -0.75, -zHalf)
   ];
   const t1Geom = new THREE.BufferGeometry().setFromPoints(t1Points);
   tick1 = new THREE.Line(t1Geom, lineMaterial);
@@ -249,19 +259,26 @@ const drawDimensionLines = (thickness) => {
 
   // Tick 2
   const t2Points = [
-    new THREE.Vector3(0.7, -0.75, zHalf),
-    new THREE.Vector3(0.9, -0.75, zHalf)
+    new THREE.Vector3(xOffset - 0.08, -0.75, zHalf),
+    new THREE.Vector3(xOffset + 0.08, -0.75, zHalf)
   ];
   const t2Geom = new THREE.BufferGeometry().setFromPoints(t2Points);
   tick2 = new THREE.Line(t2Geom, lineMaterial);
   scene.add(tick2);
 };
 
-const updateWallThickness = (thickness) => {
+const updateWallDimensions = () => {
   if (!wallMesh) return;
-  const visualScale = Math.min(1.8, Math.max(0.04, thickness * 4));
-  wallMesh.scale.z = visualScale;
-  drawDimensionLines(thickness);
+  const visualThickness = Math.min(1.8, Math.max(0.04, props.espesor * 4));
+  const lx = props.lx || 1.5;
+  const ly = props.ly || 1.2;
+  
+  // Normalise physical dimensions relative to 1.5m and 1.2m reference box
+  const scaleX = Math.min(3.0, Math.max(0.3, (lx / 1.5) * 1.2));
+  const scaleY = Math.min(3.0, Math.max(0.3, (ly / 1.2) * 1.2));
+  
+  wallMesh.scale.set(scaleX, scaleY, visualThickness);
+  drawDimensionLines(props.espesor, scaleX);
 };
 
 const updateWallMaterialType = () => {
@@ -290,7 +307,10 @@ const resetCamera = () => {
 const updateLabelPosition = () => {
   if (!camera || !renderer || !canvasContainer.value) return;
   
-  const tempV = new THREE.Vector3(0.95, -0.75, 0);
+  const scaleX = wallMesh ? wallMesh.scale.x : 1.0;
+  const xOffset = (0.6 * scaleX) + 0.25;
+  
+  const tempV = new THREE.Vector3(xOffset, -0.75, 0);
   tempV.project(camera);
   
   const width = canvasContainer.value.clientWidth;
@@ -316,8 +336,8 @@ const handleResize = () => {
 };
 
 // Watchers
-watch(() => props.espesor, (newVal) => {
-  updateWallThickness(newVal);
+watch(() => [props.espesor, props.lx, props.ly], () => {
+  updateWallDimensions();
 });
 
 watch(() => [props.color, props.materialNombre], () => {
