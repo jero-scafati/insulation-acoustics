@@ -27,36 +27,26 @@ export function calcularParedSimpleZonal(material, frecuencias) {
   const fd = calcularFd(material.young, material.densidad, material.espesor, nu);
   const eta = material.amortiguamiento || 0.01;
 
-  const rho0 = 1.18; // Air density (kg/m³)
-  const c0 = 343;    // Speed of sound in air (m/s)
-  const wc = 2 * Math.PI * fc;
-
   return frecuencias.map(f => {
-    const w = 2 * Math.PI * f;
+    // Base Ley de Masas de Cátedra (campo difuso): R = 20*log10(ms * f) - 47
+    const R_masas = 20 * Math.log10(ms * f) - 47;
 
-    // Zona I: f < fc -> Ley de Masas Cátedra: R = 20*log10(ms * f) - 47
+    // Zona I: f < fc -> Ley de Masas pura
     if (f < fc) {
-      const R = 20 * Math.log10(ms * f) - 47;
-      return Math.max(0, parseFloat(R.toFixed(1)));
+      return Math.max(0, parseFloat(R_masas.toFixed(1)));
     }
 
-    // Zona III: f >= fd -> Retorno a Ley de Masas Cátedra
+    // Zona III: f >= fd -> Retorno a Ley de Masas
     if (f >= fd) {
-      const R = 20 * Math.log10(ms * f) - 47;
-      return Math.max(0, parseFloat(R.toFixed(1)));
+      return Math.max(0, parseFloat(R_masas.toFixed(1)));
     }
 
-    // Zona II: fc <= f < fd -> Ecuación (14) de Cátedra
-    // Para evitar la singularidad exacta en f = fc (donde log10(1 - wc/w) tendería a -inf),
-    // tomamos un pequeño delta o límite físico cuando w está excesivamente cerca de wc:
-    const w_effective = Math.max(w, wc * 1.001);
-    const term1 = 20 * Math.log10((w_effective * ms) / (2 * rho0 * c0));
-    const term2 = 10 * Math.log10(Math.PI / (4 * eta));
-    const term3 = 10 * Math.log10(w_effective / wc);
-    const term4 = 10 * Math.log10(Math.max(0.001, 1 - (wc / w_effective)));
-    const term5 = 5;
+    // Zona II: fc <= f < fd -> Región de Coincidencia
+    // R = R_masas + 10*log10(eta) + 10*log10(f / fc) + 10*log10(1 - fc / f)
+    // Para evitar la singularidad en f = fc, limitamos el término (1 - fc/f) a un mínimo de 0.05
+    const diff = Math.max(0.05, 1 - (fc / f));
+    const R = R_masas + 10 * Math.log10(eta) + 10 * Math.log10(f / fc) + 10 * Math.log10(diff);
 
-    const R = term1 + term2 - term3 - term4 + term5;
     return Math.max(0, parseFloat(R.toFixed(1)));
   });
 }
